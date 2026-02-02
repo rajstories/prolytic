@@ -1,8 +1,12 @@
 import dotenv from 'dotenv';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import express from 'express';
 import multer from 'multer';
 import crypto from 'crypto';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import {
   exchangeCodeForShortLivedToken,
