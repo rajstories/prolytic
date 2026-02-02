@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "dev:api": "tsx server/index.ts",
-    "build": "tsc && vite build",
+    "build": "vite build && tsc server/index.ts --outDir dist/server --skipLibCheck",
     "start": "node --loader tsx server/index.ts",
     "preview": "vite preview"
   },

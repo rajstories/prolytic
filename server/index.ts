@@ -18,6 +18,7 @@ dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
 dotenv.config();
 
 const app = express();
+app.use(express.json());
 const upload = multer({ storage: multer.memoryStorage() });
 
 const MODEL_ID = 'gemini-2.0-flash';
@@ -278,7 +279,15 @@ app.post('/api/analyze', upload.single('video'), async (req, res) => {
   }
 });
 
-const port = process.env.API_PORT ? Number(process.env.API_PORT) : 3001;
+// Serve static files from the built frontend
+app.use(express.static(path.join(__dirname, '../dist')));
+
+// Serve React app for all other routes (must be last)
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../dist/index.html'));
+});
+
+const port = process.env.PORT || process.env.API_PORT || 3001;
 app.listen(port, () => {
-  console.log(`Video analysis API listening on http://localhost:${port}`);
+  console.log(`Server listening on port ${port}`);
 });
