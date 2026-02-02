@@ -14,7 +14,6 @@
     <a href="https://github.com/yourusername/prolytic/issues"><strong>Report Bug</strong></a> ·
     <a href="https://github.com/yourusername/prolytic/pulls"><strong>Request Feature</strong></a>
   </p>
-
 </div>
 
 <div align="center">
@@ -31,64 +30,113 @@
 
 <img width="1280" height="709" alt="Prolytic UI Preview" src="https://github.com/user-attachments/assets/381446c7-56f7-44a1-bb0e-ad30018887ab" />
 
-<br />
-
 ---
 
 ## 🚨 The Problem
 
-Modern creators are stuck on a **content treadmill**. Publishing consistently is easy. Publishing *strategically* is not.
+Modern creators are stuck on a content treadmill.
 
-| 😤 Editing Fatigue | ❓ The Guesswork Gap | 📉 Algorithm Opacity |
+| Editing Fatigue | Guesswork Gap | Algorithm Opacity |
 | :-- | :-- | :-- |
-| Hormozi-style captions demand **hours of manual keyframing** per clip. | Creators only learn a video failed **after it’s posted**. | Metrics explain *what* happened, not **why**. |
-
-The result: wasted effort, creative burnout, and blind iteration.
+| Manual keyframing for captions takes hours per clip. | Creators only know if a video failed after posting. | Metrics explain what happened, not why. |
 
 ---
 
 ## 🚀 The Solution: Prolytic
 
-**Prolytic** is an AI creative director that lives entirely in your browser.
+**Prolytic** is an AI creative director that runs entirely in the browser.
 
-Instead of treating video as audio-plus-text, Prolytic uses **Gemini 2.0 Flash’s multimodal intelligence** to *watch* the video itself.
+Using **Gemini 2.0 Flash’s multimodal capabilities**, Prolytic watches the video itself instead of relying only on speech-to-text.
 
-It analyzes visual pacing, emotional tone, and narrative structure to:
+It enables creators to:
 
-1. **Auto-Edit**  
-   Generate frame-perfect cinematic captions aligned with on-screen energy.
+1. Auto-generate cinematic, frame-perfect captions  
+2. Predict virality before posting  
+3. Audit content with actionable AI feedback  
 
-2. **Predict Reach**  
-   Score a clip’s **Virality Potential (0–100)** before it’s posted.
 
-3. **Audit Content**  
-   Deliver actionable, data-backed feedback instantly.
+🔑 Key Technical Innovations
 
----
+1. Multimodal Analysis : Uses google-generative-ai to detect visual context such as facial expressions, motion chaos, and scene energy that text-only models miss.
 
-## ⚡ Technical Architecture  
-### The “Gemini Flex” Pipeline
+2. Structured JSON Output : Returns precise timestamps and styling metadata rendered instantly by a custom React overlay engine.
 
-Prolytic bypasses traditional speech-to-text bottlenecks by sending **native video tokens** directly to Gemini.
+3. Long-Context Reasoning : Maintains the full narrative arc to detect pacing and retention issues across the entire clip.
 
-```ts
-// 1. Multimodal Tokenization
-// Video is treated as a sequence of visual tokens, not a static file.
-const videoParts = [
-  {
-    inlineData: {
-      mimeType: "video/mp4",
-      data: Buffer.from(
-        fs.readFileSync("viral-clip.mp4")
-      ).toString("base64"),
-    },
-  },
-];
 
-// 2. Structured "Director" Prompt
-// Gemini is forced to return strict JSON for deterministic rendering.
-const result = await model.generateContent([
-  "Analyze this video for retention beats. Return JSON with 'captions' and 'viralityScore'.",
-  ...videoParts,
-]);
+🛠️ Tech Stack
 
+Core AI : 
+Google Gemini 3.0 (Multimodal)
+
+
+Frontend : 
+React, TypeScript, Tailwind CSS, Framer Motion
+
+
+Backend: 
+Next.js 14 (Server Actions), Node.js
+
+
+Auth & Data : 
+Instagram Graph API, NextAuth
+
+
+
+✨ Key Features : 
+
+1. Cinematic Auto-Captions : Automatically converts speech into animated, professional typography.
+
+2. Predictive Reach Score : Scores a video’s virality potential before publishing.
+
+3. Instant AI Audit : Provides feedback on hooks, pacing, and visual retention.
+
+4. Instagram Integration : Audits real channel performance using the Graph API.
+
+
+
+🏁 Getting Started
+
+
+1. Clone the repository
+   
+git clone https://github.com/rajstories/prolytic
+cd prolytic
+
+
+2. Install dependencies
+npm install
+# or
+yarn install
+
+
+3. Configure environment variables
+Create a .env.local file:
+
+GOOGLE_GEMINI_API_KEY=your_gemini_key_here
+
+INSTAGRAM_CLIENT_ID=your_meta_app_id
+
+INSTAGRAM_CLIENT_SECRET=your_meta_app_secret
+
+NEXTAUTH_SECRET=your_random_secret
+
+
+
+4. Run the development server
+npm run dev
+Open http://localhost:3000 in your browser.
+
+
+
+🔮 Future Roadmap
+Auto B-Roll Engine
+
+Voice Cloning for multilingual content
+
+One-click export to TikTok and Instagram Reels
+
+🤝 Contributing
+Contributions are welcome and appreciated.
+
+<div align="center"> <p> Built with ❤️ for the <strong>Google Gemini Hackathon 2026</strong> </p> </div> 
