@@ -42,19 +42,18 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenModal }) => {
           >
             Solutions
           </a>
-          <a
-            href="#pricing"
+          <a 
+            href="#pricing" 
             onClick={(e) => scrollToSection(e, 'pricing')}
             className="text-sm font-medium text-slate-500 hover:text-[#0F172A] transition-colors cursor-pointer"
           >
             Pricing
           </a>
-          <a
-            href="#pricing"
-            onClick={(e) => scrollToSection(e, 'pricing')}
+          <a 
+            href="/docs"
             className="text-sm font-medium text-slate-500 hover:text-[#0F172A] transition-colors cursor-pointer"
           >
-            Enterprise
+            Documentation
           </a>
         </div>
 
