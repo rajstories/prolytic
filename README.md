@@ -10,7 +10,7 @@
   </p>
 
   <p>
-    <a href="https://prolytic-demo.vercel.app"><strong>Live Demo</strong></a> ·
+    <a href="https://prolytic.in"><strong>Live Demo</strong></a> ·
     <a href="https://github.com/yourusername/prolytic/issues"><strong>Report Bug</strong></a> ·
     <a href="https://github.com/yourusername/prolytic/pulls"><strong>Request Feature</strong></a>
   </p>
