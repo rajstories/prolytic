@@ -291,7 +291,7 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../dist/index.html'));
 });
 
-const port = process.env.PORT || process.env.API_PORT || 3001;
-app.listen(port, () => {
+const port = Number(process.env.PORT) || 8080;
+app.listen(port, '0.0.0.0', () => {
   console.log(`Server listening on port ${port}`);
 });
