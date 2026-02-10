@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { 
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   BarChart, Bar
@@ -22,6 +22,16 @@ const demographicData = [
   { name: '25-34', value: 45 },
   { name: '35-44', value: 15 },
   { name: '45+', value: 5 },
+];
+
+const lowRetentionData = [
+  { name: 'Mon', views: 4200, retention: 2200 },
+  { name: 'Tue', views: 3800, retention: 1600 },
+  { name: 'Wed', views: 3200, retention: 1200 },
+  { name: 'Thu', views: 3100, retention: 1100 },
+  { name: 'Fri', views: 3000, retention: 900 },
+  { name: 'Sat', views: 2900, retention: 850 },
+  { name: 'Sun', views: 2800, retention: 800 },
 ];
 
 const MetricCard: React.FC<MetricCardProps> = ({ title, value, change, trend }) => (
@@ -59,14 +69,92 @@ const MetricSkeleton: React.FC = () => (
 );
 
 const Dashboard: React.FC = () => {
-  const { data: dashboardData, loading } = useDashboardData();
+  const { data: dashboardData, loading, error } = useDashboardData();
   const followersCount = dashboardData?.user.followers_count;
   const reachCount = dashboardData?.insights.reach;
   const impressionsCount = dashboardData?.insights.impressions;
+  const [demoFocus, setDemoFocus] = useState<'tech-retention' | 'cooking-ctr' | null>(null);
+
+  useEffect(() => {
+    const stored = localStorage.getItem('prolytic:onboarding');
+    if (!stored) return;
+    try {
+      const parsed = JSON.parse(stored) as { niche?: string; struggle?: string };
+      if (parsed.niche === 'tech' && parsed.struggle === 'retention') {
+        setDemoFocus('tech-retention');
+      } else if (parsed.niche === 'cooking' && parsed.struggle === 'ctr') {
+        setDemoFocus('cooking-ctr');
+      }
+    } catch {
+      setDemoFocus(null);
+    }
+  }, []);
+
+  const chartData = useMemo(() => {
+    if (demoFocus === 'tech-retention') return lowRetentionData;
+    return viewsData;
+  }, [demoFocus]);
 
   const formatNumber = (value: number | null | undefined) => {
     if (value === null || value === undefined) return '—';
     return value.toLocaleString();
+  };
+
+  const handleExport = () => {
+    const now = new Date();
+    const reportDate = now.toLocaleDateString();
+    const followers = formatNumber(followersCount);
+    const reach = formatNumber(reachCount);
+    const impressions = formatNumber(impressionsCount);
+
+    const html = `<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Prolytic Report</title>
+    <style>
+      body { font-family: Inter, ui-sans-serif, system-ui; margin: 40px; color: #0f172a; }
+      h1 { font-size: 28px; margin-bottom: 8px; }
+      h2 { font-size: 18px; margin-top: 28px; }
+      .meta { color: #64748b; font-size: 12px; text-transform: uppercase; letter-spacing: 0.2em; }
+      .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-top: 16px; }
+      .card { border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px; }
+      .label { color: #64748b; font-size: 12px; }
+      .value { font-size: 22px; font-weight: 600; margin-top: 6px; }
+      .section { margin-top: 24px; }
+      .note { color: #475569; font-size: 13px; }
+    </style>
+  </head>
+  <body>
+    <div class="meta">Prolytic • Audience Summary</div>
+    <h1>Profile Performance Report</h1>
+    <div class="note">Generated on ${reportDate}</div>
+
+    <div class="section">
+      <h2>Core Metrics</h2>
+      <div class="grid">
+        <div class="card"><div class="label">Followers</div><div class="value">${followers}</div></div>
+        <div class="card"><div class="label">Reach (24h)</div><div class="value">${reach}</div></div>
+        <div class="card"><div class="label">Impressions (24h)</div><div class="value">${impressions}</div></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Summary</h2>
+      <p class="note">
+        This report consolidates live audience metrics and Prolytic analysis signals to provide
+        a clear view of performance and momentum.
+      </p>
+    </div>
+  </body>
+</html>`;
+
+    const reportWindow = window.open('', '_blank');
+    if (!reportWindow) return;
+    reportWindow.document.write(html);
+    reportWindow.document.close();
+    reportWindow.focus();
+    reportWindow.print();
   };
 
   return (
@@ -76,10 +164,30 @@ const Dashboard: React.FC = () => {
           <h2 className="text-2xl font-semibold text-slate-900 tracking-tight">Overview</h2>
           <p className="text-sm text-slate-500 mt-1">Platform performance summary for the last 7 days.</p>
         </div>
-        <button className="text-sm font-medium text-slate-600 bg-white border border-slate-200 px-4 py-2 rounded-sm hover:bg-slate-50 transition-colors">
+        <button
+          onClick={handleExport}
+          className="text-sm font-medium text-slate-600 bg-white border border-slate-200 px-4 py-2 rounded-sm hover:bg-slate-50 transition-colors"
+        >
           Export Report
         </button>
       </header>
+
+      {error && (
+        <div className="text-sm text-amber-700 bg-amber-50 border border-amber-100 px-4 py-3 rounded-sm">
+          Live data unavailable. Showing demo metrics. ({error})
+        </div>
+      )}
+
+      {demoFocus && (
+        <div className="border border-blue-100 bg-blue-50 text-blue-900 text-sm px-4 py-3 rounded-sm">
+          {demoFocus === 'tech-retention' && (
+            <span>Demo Mode: Tech Review Draft loaded — retention is underperforming.</span>
+          )}
+          {demoFocus === 'cooking-ctr' && (
+            <span>Demo Mode: Cooking workflow — Thumbnail Analysis prioritized for CTR gains.</span>
+          )}
+        </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {loading ? (
@@ -130,7 +238,7 @@ const Dashboard: React.FC = () => {
           </div>
           <div className="h-[300px] w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={viewsData} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
+              <AreaChart data={chartData} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorViews" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#64748b" stopOpacity={0.1}/>

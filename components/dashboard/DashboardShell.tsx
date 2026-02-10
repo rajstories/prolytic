@@ -1,5 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { useLocation, useNavigate, Routes, Route } from 'react-router-dom';
 import { ViewState } from '../../types';
+import { useUserProfile } from '../../contexts/UserProfileContext';
+import { BusinessDashboard } from '../business/BusinessDashboard';
 import Dashboard from '../Dashboard';
 import ScriptAnalyzer from '../ScriptAnalyzer';
 import IdeaGenerator from '../IdeaGenerator';
@@ -10,27 +13,74 @@ import {
   Lightbulb,
   Settings,
   ChevronRight,
-  Clapperboard
+  Clapperboard,
+  Users,
+  Shuffle
 } from '../ui/Icons';
 import { Layout } from '../layout';
+import { AudienceLab } from './AudienceLab';
+import { NarrativeLab } from '../../pages/NarrativeLab';
 
 export const DashboardShell: React.FC = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { userProfile, isBusiness } = useUserProfile();
   const [currentView, setCurrentView] = useState<ViewState>(
     ViewState.DASHBOARD
   );
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
+  const routeView = useMemo(() => {
+    if (location.pathname.startsWith('/dashboard/audience-lab')) {
+      return ViewState.AUDIENCE_LAB;
+    }
+    if (location.pathname.startsWith('/dashboard/narrative-lab')) {
+      return ViewState.NARRATIVE_LAB;
+    }
+    return ViewState.DASHBOARD;
+  }, [location.pathname]);
+
+  useEffect(() => {
+    setCurrentView(routeView);
+  }, [routeView]);
+
+  // Redirect business users to business dashboard
+  useEffect(() => {
+    if (isBusiness && !location.pathname.startsWith('/dashboard/brand')) {
+      navigate('/dashboard/brand/hub');
+    }
+  }, [isBusiness, location.pathname, navigate]);
+
+  // If user is business, render business dashboard
+  if (isBusiness) {
+    return (
+      <Routes>
+        <Route path="brand/*" element={<BusinessDashboard />} />
+        <Route path="*" element={<BusinessDashboard />} />
+      </Routes>
+    );
+  }
+
   const NavItem = ({
     view,
     label,
-    icon: Icon
+    icon: Icon,
+    href
   }: {
     view: ViewState;
     label: string;
     icon: React.FC<any>;
+    href?: string;
   }) => (
     <button
-      onClick={() => setCurrentView(view)}
+      onClick={() => {
+        setCurrentView(view);
+        if (href) {
+          navigate(href);
+        } else if (location.pathname.startsWith('/dashboard/audience-lab')) {
+          navigate('/dashboard');
+        }
+      }}
       className={`w-full flex items-center px-4 py-2.5 text-sm font-medium transition-colors mb-1 rounded-sm ${
         currentView === view
           ? 'bg-indigo-50 text-indigo-700'
@@ -106,6 +156,18 @@ export const DashboardShell: React.FC = () => {
               label={sidebarOpen ? 'Video Studio' : ''}
               icon={Clapperboard}
             />
+            <NavItem
+              view={ViewState.AUDIENCE_LAB}
+              label={sidebarOpen ? 'Audience Lab' : ''}
+              icon={Users}
+              href="/dashboard/audience-lab"
+            />
+            <NavItem
+              view={ViewState.NARRATIVE_LAB}
+              label={sidebarOpen ? 'Narrative Doctor' : ''}
+              icon={Shuffle}
+              href="/dashboard/narrative-lab"
+            />
           </nav>
 
           <div className="p-4 border-t border-slate-100">
@@ -128,6 +190,8 @@ export const DashboardShell: React.FC = () => {
                 {currentView === ViewState.SCRIPT_ANALYZER && 'Script Analysis'}
                 {currentView === ViewState.IDEA_GENERATOR && 'Idea Generation'}
                 {currentView === ViewState.VIDEO_STUDIO && 'Video Studio'}
+                {currentView === ViewState.AUDIENCE_LAB && 'Audience Lab'}
+                {currentView === ViewState.NARRATIVE_LAB && 'Narrative Doctor'}
               </span>
             </div>
             <div className="flex items-center space-x-4">
@@ -142,6 +206,8 @@ export const DashboardShell: React.FC = () => {
             {currentView === ViewState.SCRIPT_ANALYZER && <ScriptAnalyzer />}
             {currentView === ViewState.IDEA_GENERATOR && <IdeaGenerator />}
             {currentView === ViewState.VIDEO_STUDIO && <VideoStudio />}
+            {currentView === ViewState.AUDIENCE_LAB && <AudienceLab />}
+            {currentView === ViewState.NARRATIVE_LAB && <NarrativeLab />}
           </main>
         </div>
       </div>

@@ -2,8 +2,10 @@ import React, { useState, useRef } from 'react';
 import { 
   AreaChart, Area, ResponsiveContainer, XAxis, Tooltip
 } from 'recharts';
-import { analyzeScript } from '../services/geminiService';
 import { ScriptAnalysisResult } from '../types';
+import { useApiKey } from '../contexts/ApiKeyContext';
+import { useUserProfile } from '../contexts/UserProfileContext';
+import { ApiKeyModal } from './ApiKeyModal';
 import { useDashboardData } from './dashboard/DashboardDataContext';
 import { DEMO_RESULT as FALLBACK_DEMO_RESULT, retentionMockData as FALLBACK_RETENTION } from '../services/mockData';
 import { Loader, TrendingUp, Film, Upload, Activity, Zap, X, Eye, Sun, MessageSquare } from './ui/Icons';
@@ -36,6 +38,9 @@ const ScriptAnalyzer: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   
+  const { headers, triggerKeyModal, showKeyModal, closeKeyModal, apiKey, setApiKey } = useApiKey();
+  const { userProfile } = useUserProfile();
+  
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const demoResult = dashboardData?.demoResult ?? FALLBACK_DEMO_RESULT;
@@ -46,11 +51,36 @@ const ScriptAnalyzer: React.FC = () => {
     if (!script.trim()) return;
     setLoading(true);
     setError(null);
+    
     try {
-      const result = await analyzeScript(script);
-      setAnalysis(result);
+      const response = await fetch('/api/script', {
+        method: 'POST',
+        headers: headers(),
+        body: JSON.stringify({
+          script,
+          niche: userProfile.niche,
+          goal: userProfile.goal,
+          struggle: userProfile.struggle,
+          videoLength: userProfile.videoLength
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.status === 429) {
+        triggerKeyModal();
+        setError('Rate limit exceeded. Please add your own API key.');
+        return;
+      }
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Analysis failed');
+      }
+
+      setAnalysis(data);
     } catch (err) {
-      setError("Analysis failed. Please try again.");
+      console.error(err);
+      setError(err instanceof Error ? err.message : "Analysis failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -334,6 +364,13 @@ const ScriptAnalyzer: React.FC = () => {
           </div>
         </div>
       </div>
+
+      <ApiKeyModal 
+        isOpen={showKeyModal}
+        onClose={closeKeyModal}
+        onSubmit={setApiKey}
+        currentKey={apiKey}
+      />
     </div>
   );
 };

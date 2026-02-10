@@ -11,9 +11,9 @@ export const Hero: React.FC<HeroProps> = ({ onOpenModal }) => {
       <div className="max-w-7xl mx-auto px-6">
         <div className="max-w-6xl mx-auto text-center mb-24">
           <h1 className="font-display text-5xl md:text-7xl font-black text-brand-navy tracking-tighter leading-[1.1] mb-8 text-balance">
-            Get Cinematic Captions and{' '}
+            Stop Guessing What Goes Viral.{' '}
             <span className="text-brand-blue relative inline-block whitespace-nowrap">
-              Viral Reach
+              Know Before You Post.
               <svg
                 className="absolute w-full h-3 -bottom-1 left-0 text-blue-100 -z-10"
                 viewBox="0 0 100 10"
@@ -26,12 +26,11 @@ export const Hero: React.FC<HeroProps> = ({ onOpenModal }) => {
                   fill="none"
                 />
               </svg>
-            </span>{' '}
-            in One Click.
+            </span>
           </h1>
           <p className="text-xl md:text-2xl text-brand-slate max-w-3xl mx-auto mb-12 leading-relaxed font-light">
-            The only AI-native workspace that predicts your video's retention and
-            automates professional-grade captions.
+            The AI workspace that predicts retention, simulates your audience, and turns
+            content creation from gambling into strategy.
           </p>
 
           <div className="max-w-lg mx-auto relative flex flex-col items-center">

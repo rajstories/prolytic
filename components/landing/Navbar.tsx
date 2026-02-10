@@ -58,12 +58,12 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenModal }) => {
         </div>
 
         <div className="flex items-center gap-6">
-          <button
-            onClick={onOpenModal}
+          <a
+            href="/onboarding"
             className="bg-[#2563EB] text-white text-sm font-medium px-5 py-2.5 rounded-lg hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20 active:scale-95 duration-200"
           >
             Get Started Free
-          </button>
+          </a>
 
           <button className="md:hidden text-slate-500 hover:text-[#0F172A] transition-colors">
             <Menu size={24} />

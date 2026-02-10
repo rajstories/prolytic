@@ -11,12 +11,9 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
 
-[🎥 Watch Demo](https://youtu.be/dfAV6JnDUes?si=I6KyxbEoWF1KK30m)  • [🚀 Try Live](https://prolytic.in/)
+[🎥 Watch Demo](#) • [📖 Read Docs](#features) • [🚀 Try Live](#)
 
 ---
-<img width="1280" height="713" alt="image" src="https://github.com/user-attachments/assets/7fa9b845-5b47-4abc-86bc-90dba24816cb" />
-
-
 
 </div>
 
@@ -72,8 +69,7 @@ Upload a video and watch Gemini analyze it **pixel-by-pixel**:
 
 **Demo:**
 <div align="center">
-<img width="1278" height="715" alt="image" src="https://github.com/user-attachments/assets/714e66bd-ed12-481b-be39-fd33182e94fd" />
-
+<img src="https://via.placeholder.com/800x450/0F172A/FBBF24?text=Video+Studio+Demo" alt="Video Studio" width="80%"/>
 <br/>
 <i>↑ Upload → Analyze → Get actionable insights in 30 seconds</i>
 </div>
@@ -103,8 +99,7 @@ const thoughts = await gemini.generateContent({
 **Why it matters:** Get feedback from your target audience **before** you post—no A/B testing needed.
 
 <div align="center">
-<img width="1276" height="709" alt="image" src="https://github.com/user-attachments/assets/fbba30a4-9760-43d2-93c5-9be781e9a5e5" />
-
+<img src="https://via.placeholder.com/800x450/0F172A/4ADE80?text=Shadow+Audience+Comments" alt="Audience Lab" width="80%"/>
 <br/>
 <i>↑ Real-time persona reactions overlaid on your video timeline</i>
 </div>
@@ -134,8 +129,7 @@ Result: +37% predicted retention (based on niche benchmarks)
 ```
 
 <div align="center">
-<img width="1277" height="713" alt="image" src="https://github.com/user-attachments/assets/a5a87ba2-1b25-4f0b-9102-1a5bfe402290" />
-
+<img src="https://via.placeholder.com/800x450/0F172A/EC4899?text=Narrative+Doctor+Reordering" alt="Narrative Doctor" width="80%"/>
 <br/>
 <i>↑ AI suggests moving your hook to the front—watch the timeline rearrange itself</i>
 </div>
@@ -167,10 +161,6 @@ Stop brainstorming blindly. Let Gemini scan your niche for **gaps**.
 
 ---
 
-<img width="1280" height="714" alt="image" src="https://github.com/user-attachments/assets/63e073c6-3ef2-420f-b9ea-07abf422a4a0" />
-
-
-
 ### 📝 **5. Script Analyzer** — *Pre-Production Hook Optimizer*
 
 Paste your script. Get a **ruthless AI editor**.
@@ -189,11 +179,8 @@ Paste your script. Get a **ruthless AI editor**.
 ✅ "I wasted $5,000 on this mistake. Here's how you avoid it."
    → Curiosity gap + stakes. 91% retention predicted.
 ```
+
 ---
-
-<img width="1278" height="713" alt="image" src="https://github.com/user-attachments/assets/94554e9d-e44b-4248-8128-a610a3067eb2" />
-
-
 
 ## 🏗️ Technical Architecture
 
@@ -442,26 +429,22 @@ npm run dev
 <div align="center">
 
 ### 🎬 Video Studio
-<img width="1279" height="709" alt="image" src="https://github.com/user-attachments/assets/dceb75a6-b0ee-4dc7-ad84-c6087a77c20c" />
-
+<img src="https://via.placeholder.com/900x500/0F172A/6366F1?text=Video+Studio+Interface" alt="Video Studio" width="90%"/>
 
 ---
 
 ### 🎭 Audience Lab
-<img width="1276" height="710" alt="image" src="https://github.com/user-attachments/assets/d843b942-f886-4658-bb40-ecce992f21a0" />
-
+<img src="https://via.placeholder.com/900x500/0F172A/EC4899?text=Shadow+Audience+Simulator" alt="Audience Lab" width="90%"/>
 
 ---
 
 ### 📐 Narrative Doctor
-<img width="1278" height="710" alt="image" src="https://github.com/user-attachments/assets/c3b44172-44e2-49a1-90ab-b4748450a6da" />
-
+<img src="https://via.placeholder.com/900x500/0F172A/10B981?text=Narrative+Doctor+Timeline" alt="Narrative Doctor" width="90%"/>
 
 ---
 
 ### 💡 Idea Generator
-<img width="1280" height="714" alt="image" src="https://github.com/user-attachments/assets/63e073c6-3ef2-420f-b9ea-07abf422a4a0" />
-
+<img src="https://via.placeholder.com/900x500/0F172A/F59E0B?text=Viral+Idea+Scoring" alt="Idea Generator" width="90%"/>
 
 </div>
 
@@ -520,9 +503,12 @@ This project is licensed under the **MIT License** — see [LICENSE](LICENSE) fo
 
 ## 📬 Contact
 
-**Creator:** Team GeoVision  
-**Email:** rajshrivastav283815@gmail.com   
-**Demo Video:** [Watch on YouTube](https://youtu.be/dfAV6JnDUes?si=SCMl2X967B55vZVJ)
+**Creator:** Vishal Raj  
+**Email:** your.email@example.com  
+**Twitter:** [@yourhandle](https://twitter.com/yourhandle)  
+**Demo Video:** [Watch on YouTube](#)
+
+**For judges:** Want to see Prolytic in action? [Book a 10-min demo](#) or ping us in the hackathon Discord!
 
 ---
 
@@ -532,7 +518,7 @@ This project is licensed under the **MIT License** — see [LICENSE](LICENSE) fo
 
 **Prolytic** — *Stop guessing. Start knowing.*
 
+[⬆ Back to Top](#-prolytic)
 
 </div>
-
 

@@ -8,6 +8,7 @@ import React, {
 } from 'react';
 import { useLocation } from 'react-router-dom';
 import { fetchDashboardData, DashboardData } from '../../services/dashboardClient';
+import { DEMO_RESULT, retentionMockData } from '../../services/mockData';
 
 type DashboardDataState = {
   data: DashboardData | null;
@@ -28,6 +29,24 @@ export const DashboardDataProvider: React.FC<{ children: React.ReactNode }> = ({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const fallbackData: DashboardData = {
+    source: 'demo',
+    user: {
+      id: 'demo',
+      username: 'prolytic_demo',
+      followers_count: 128540,
+      media_count: 0
+    },
+    insights: {
+      impressions: 184320,
+      reach: 96420,
+      profile_views: null,
+      period: 'day'
+    },
+    retentionMockData,
+    demoResult: DEMO_RESULT
+  };
+
   const refresh = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -36,6 +55,7 @@ export const DashboardDataProvider: React.FC<{ children: React.ReactNode }> = ({
       setData(result);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unable to load dashboard data.');
+      setData(fallbackData);
     } finally {
       setLoading(false);
     }

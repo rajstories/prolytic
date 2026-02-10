@@ -1,21 +1,54 @@
 import React, { useState } from 'react';
-import { generateVideoIdeas } from '../services/geminiService';
 import { VideoIdea } from '../types';
 import { Loader, Lightbulb } from './ui/Icons';
+import { useApiKey } from '../contexts/ApiKeyContext';
+import { useUserProfile } from '../contexts/UserProfileContext';
+import { ApiKeyModal } from './ApiKeyModal';
 
 const IdeaGenerator: React.FC = () => {
   const [topic, setTopic] = useState('');
   const [ideas, setIdeas] = useState<VideoIdea[]>([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  
+  const { headers, triggerKeyModal, showKeyModal, closeKeyModal, apiKey, setApiKey } = useApiKey();
+  const { userProfile } = useUserProfile();
 
   const handleGenerate = async () => {
     if (!topic.trim()) return;
     setLoading(true);
+    setError(null);
+    
     try {
-      const results = await generateVideoIdeas(topic);
-      setIdeas(results);
+      const response = await fetch('/api/ideas', {
+        method: 'POST',
+        headers: headers(),
+        body: JSON.stringify({
+          topic,
+          niche: userProfile.niche,
+          audience: userProfile.audience,
+          videoLength: userProfile.videoLength,
+          subscribers: userProfile.subscribers,
+          count: 5
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.status === 429) {
+        triggerKeyModal();
+        setError('Rate limit exceeded. Please add your own API key.');
+        return;
+      }
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to generate ideas');
+      }
+
+      setIdeas(data);
     } catch (e) {
       console.error(e);
+      setError(e instanceof Error ? e.message : 'Failed to generate ideas');
     } finally {
       setLoading(false);
     }
@@ -27,6 +60,12 @@ const IdeaGenerator: React.FC = () => {
         <h2 className="text-2xl font-semibold text-slate-900 tracking-tight">Idea Generator</h2>
         <p className="text-sm text-slate-500 mt-1">Brainstorm high-performing video concepts in seconds.</p>
       </header>
+
+      {error && (
+        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-sm">
+          <p className="text-sm text-red-700">{error}</p>
+        </div>
+      )}
 
       <div className="flex gap-4 mb-10">
         <input
@@ -61,18 +100,22 @@ const IdeaGenerator: React.FC = () => {
             <p className="text-slate-600 text-sm mb-4 leading-relaxed">
               {idea.logline}
             </p>
-            <div className="flex items-center text-xs text-slate-500 font-medium bg-slate-50 px-3 py-2 rounded-sm w-fit">
-              Target: <span className="text-slate-700 ml-1">{idea.targetAudience}</span>
-            </div>
           </div>
         ))}
-        
+
         {ideas.length === 0 && !loading && (
            <div className="text-center py-20 border-2 border-dashed border-slate-200 rounded-sm">
              <p className="text-slate-400 text-sm">Enter a topic above to generate concepts.</p>
            </div>
         )}
       </div>
+
+      <ApiKeyModal 
+        isOpen={showKeyModal}
+        onClose={closeKeyModal}
+        onSubmit={setApiKey}
+        currentKey={apiKey}
+      />
     </div>
   );
 };

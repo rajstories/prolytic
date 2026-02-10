@@ -1,7 +1,12 @@
-import React, { useState, useRef } from 'react';
-import { Upload, X, MessageSquare, TrendingUp, Hash, Activity } from './ui/Icons';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { Upload, X, MessageSquare, Hash, Activity } from './ui/Icons';
 import { analyzeVideo } from '../services/videoAnalysisService';
-import { VideoAnalysisResult, VideoCaption } from '../types';
+import { VideoAnalysisResult, VideoCaption, TimestampedWord } from '../types';
+import { ImpactAnalytics } from './ImpactAnalytics';
+import { ApiKeyModal } from './ApiKeyModal';
+import { CaptionOverlay } from './CaptionOverlay';
+import { useApiKey } from '../contexts/ApiKeyContext';
+import { useUserProfile } from '../contexts/UserProfileContext';
 
 const VideoStudio: React.FC = () => {
   const [videoFile, setVideoFile] = useState<File | null>(null);
@@ -12,7 +17,42 @@ const VideoStudio: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [description, setDescription] = useState('');
   const [hashtagsText, setHashtagsText] = useState('');
+  const [videoTime, setVideoTime] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  const { apiKey, setApiKey, showKeyModal, triggerKeyModal, closeKeyModal } = useApiKey();
+  const { userProfile } = useUserProfile();
+
+  // Sync videoTime with the <video> element's currentTime (~60fps)
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    let rafId: number;
+    const tick = () => {
+      setVideoTime(video.currentTime);
+      rafId = requestAnimationFrame(tick);
+    };
+
+    const onPlay = () => { rafId = requestAnimationFrame(tick); };
+    const onPause = () => { cancelAnimationFrame(rafId); setVideoTime(video.currentTime); };
+    const onSeeked = () => { setVideoTime(video.currentTime); };
+
+    video.addEventListener('play', onPlay);
+    video.addEventListener('pause', onPause);
+    video.addEventListener('seeked', onSeeked);
+
+    // If already playing when analysis finishes
+    if (!video.paused) onPlay();
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      video.removeEventListener('play', onPlay);
+      video.removeEventListener('pause', onPause);
+      video.removeEventListener('seeked', onSeeked);
+    };
+  }, [analysis]); // re-attach when analysis arrives
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -68,13 +108,20 @@ const VideoStudio: React.FC = () => {
     setIsProcessing(true);
     setError(null);
     try {
-      const result = await analyzeVideo(videoFile);
+      const result = await analyzeVideo(videoFile, apiKey);
       setAnalysis(result);
       setDescription(result.socialAssets.description);
       setHashtagsText(result.socialAssets.hashtags.join(' '));
     } catch (err) {
-      const message =
-        err instanceof Error ? err.message : 'Video analysis failed.';
+      let message = err instanceof Error ? err.message : 'Video analysis failed.';
+      
+      // Check if it's a rate limit error
+      if (message.includes('rate limit') || message.includes('429') || message.includes('Too Many Requests')) {
+        setError(message);
+        triggerKeyModal(); // Show modal on rate limit
+        return;
+      }
+      
       setError(message);
     } finally {
       setIsProcessing(false);
@@ -87,52 +134,23 @@ const VideoStudio: React.FC = () => {
     return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
   };
 
-  const CinematicCaptionOverlay = ({ captions }: { captions: VideoCaption[] }) => (
-    <div className="absolute inset-0 flex items-end justify-center pb-8 pointer-events-none">
-      <div
-        className="space-y-2 text-center"
-        style={{ fontFamily: 'Inter, ui-sans-serif, system-ui' }}
-      >
-        {captions.map((caption, idx) => (
-          <div
-            key={`${caption.start}-${idx}`}
-            className="text-white text-lg md:text-2xl font-semibold tracking-[0.2em] uppercase drop-shadow-[0_2px_10px_rgba(0,0,0,0.55)] bg-black/35 backdrop-blur-sm px-4 py-2 rounded-md"
-          >
-            {caption.text}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-
-  const ImpactAnalyticsSkeleton = () => (
-    <div className="space-y-4 animate-pulse">
-      <div className="h-5 w-40 bg-slate-200 rounded-sm"></div>
-      <div className="h-10 w-full bg-slate-100 rounded-sm"></div>
-      <div className="space-y-2">
-        <div className="h-3 w-full bg-slate-100 rounded-sm"></div>
-        <div className="h-3 w-5/6 bg-slate-100 rounded-sm"></div>
-        <div className="h-3 w-2/3 bg-slate-100 rounded-sm"></div>
-      </div>
-    </div>
-  );
-
   return (
-    <div className="p-6 h-full flex flex-col min-h-0 bg-white">
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-6 min-h-0">
+    <div className="p-6 bg-white">
+      <div className="grid grid-cols-1 gap-6">
         
         {/* Left Pane: The Stage */}
-        <div className="lg:col-span-2 flex flex-col bg-slate-900 border border-slate-200 rounded-lg shadow-sm overflow-hidden relative group">
+        <div className="flex flex-col bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden relative group min-h-[420px]">
           
           {videoUrl ? (
-             <div className="relative w-full h-full bg-black flex items-center justify-center">
+             <div className="relative w-full h-full bg-slate-950 flex items-center justify-center">
                 <video 
+                  ref={videoRef}
                   src={videoUrl} 
                   controls 
                   className="w-full max-h-full object-contain" 
                 />
-                {analysis?.captions?.length ? (
-                  <CinematicCaptionOverlay captions={analysis.captions} />
+                {analysis?.wordCaptions?.length ? (
+                  <CaptionOverlay videoTime={videoTime} captions={analysis.wordCaptions} />
                 ) : null}
                 <button 
                   onClick={clearVideo}
@@ -159,18 +177,18 @@ const VideoStudio: React.FC = () => {
              </div>
           ) : (
             <div 
-              className={`flex-1 flex flex-col items-center justify-center border-2 border-dashed transition-all duration-200 m-4 rounded-lg
-                ${isDragging ? 'border-indigo-500 bg-slate-800' : 'border-slate-700 bg-slate-900 hover:bg-slate-800'}`}
+              className={`flex-1 flex flex-col items-center justify-center border-2 border-dashed transition-all duration-200 m-4 rounded-lg bg-slate-50
+                ${isDragging ? 'border-indigo-500 bg-indigo-50' : 'border-slate-200 hover:border-indigo-300 hover:bg-indigo-50/40'}`}
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
               onDrop={handleDrop}
               onClick={() => fileInputRef.current?.click()}
             >
-              <div className="w-16 h-16 bg-slate-800 rounded-2xl flex items-center justify-center mb-6 border border-slate-700">
-                <Upload className="w-8 h-8 text-indigo-400" />
+              <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mb-6 border border-slate-200 shadow-sm">
+                <Upload className="w-8 h-8 text-indigo-600" />
               </div>
-              <h3 className="text-white font-medium text-lg mb-2">Upload Video Source</h3>
-              <p className="text-slate-400 text-sm mb-6 max-w-md text-center">
+              <h3 className="text-slate-900 font-semibold text-lg mb-2">Upload Video Source</h3>
+              <p className="text-slate-500 text-sm mb-6 max-w-md text-center">
                 Drag and drop your raw video file here, or click to browse. 
                 Supports MP4, MOV, and AVI up to 2GB.
               </p>
@@ -189,7 +207,7 @@ const VideoStudio: React.FC = () => {
           
           {/* Stage Label */}
           <div className="absolute top-0 left-0 px-6 py-4 pointer-events-none">
-            <span className="text-white/80 font-medium text-sm bg-black/30 backdrop-blur-sm px-3 py-1 rounded-full border border-white/10">
+            <span className="text-slate-700 font-medium text-sm bg-white/80 backdrop-blur-sm px-3 py-1 rounded-full border border-slate-200">
               The Stage
             </span>
           </div>
@@ -204,7 +222,7 @@ const VideoStudio: React.FC = () => {
             </h3>
           </div>
 
-          <div className="flex-1 overflow-y-auto bg-slate-50 p-6 space-y-6">
+          <div className="bg-slate-50 p-6 space-y-6">
             {error && (
               <div className="text-sm text-red-700 bg-red-50 border border-red-100 px-4 py-3 rounded-sm">
                 {error}
@@ -278,56 +296,24 @@ const VideoStudio: React.FC = () => {
             {/* Card 3: Impact Analytics */}
             <div className="bg-white p-5 rounded-sm border border-slate-200 shadow-sm">
               <h4 className="text-sm font-semibold text-slate-900 flex items-center gap-2 mb-4">
-                <TrendingUp className="w-4 h-4 text-slate-500" />
+                <Activity className="w-4 h-4 text-slate-500" />
                 Impact Analytics
               </h4>
-              
-              <div className="space-y-4">
-                {isProcessing ? (
-                  <ImpactAnalyticsSkeleton />
-                ) : analysis ? (
-                  <>
-                    <div>
-                      <div className="flex justify-between items-end mb-2">
-                        <span className="text-xs font-medium text-slate-600">Engagement Score (First 3s)</span>
-                        <span className="text-sm font-bold text-slate-900">
-                          {analysis.reachAudit.engagementScore}/100
-                        </span>
-                      </div>
-                      <div className="w-full bg-slate-100 rounded-full h-2">
-                        <div
-                          className="bg-indigo-600 h-2 rounded-full"
-                          style={{
-                            width: `${Math.min(100, Math.max(0, analysis.reachAudit.engagementScore))}%`
-                          }}
-                        ></div>
-                      </div>
-                    </div>
-
-                    <div className="p-3 bg-slate-50 rounded-sm border border-slate-100">
-                      <p className="text-xs font-semibold text-slate-900 mb-2">Improvements</p>
-                      <ul className="space-y-1 text-xs text-slate-600">
-                        {analysis.reachAudit.improvements.map((item, idx) => (
-                          <li key={`${item}-${idx}`} className="flex items-start gap-2">
-                            <span className="text-indigo-500 font-bold">•</span>
-                            <span>{item}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  </>
-                ) : (
-                  <div className="text-xs text-slate-400 italic">
-                    {videoFile ? 'Run analysis to see impact analytics.' : 'Upload a video to begin.'}
-                  </div>
-                )}
-              </div>
+              <ImpactAnalytics audit={analysis?.reachAudit ?? null} loading={isProcessing} />
             </div>
 
           </div>
         </div>
 
       </div>
+
+      {/* API Key Modal */}
+      <ApiKeyModal 
+        isOpen={showKeyModal}
+        onClose={closeKeyModal}
+        onSubmit={setApiKey}
+        currentKey={apiKey}
+      />
     </div>
   );
 };

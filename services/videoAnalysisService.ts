@@ -4,13 +4,19 @@ type ApiError = {
   error?: string;
 };
 
-export const analyzeVideo = async (file: File): Promise<VideoAnalysisResult> => {
+export const analyzeVideo = async (file: File, apiKey?: string): Promise<VideoAnalysisResult> => {
   const formData = new FormData();
   formData.append("video", file);
 
+  const headers: HeadersInit = {};
+  if (apiKey) {
+    headers['x-gemini-api-key'] = apiKey;
+  }
+
   const response = await fetch("/api/analyze", {
     method: "POST",
-    body: formData
+    body: formData,
+    headers
   });
 
   if (!response.ok) {
