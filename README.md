@@ -520,12 +520,9 @@ This project is licensed under the **MIT License** — see [LICENSE](LICENSE) fo
 
 ## 📬 Contact
 
-**Creator:** Vishal Raj  
-**Email:** your.email@example.com  
-**Twitter:** [@yourhandle](https://twitter.com/yourhandle)  
-**Demo Video:** [Watch on YouTube](#)
-
-**For judges:** Want to see Prolytic in action? [Book a 10-min demo](#) or ping us in the hackathon Discord!
+**Creator:** Team GeoVision  
+**Email:** rajshrivastav283815@gmail.com   
+**Demo Video:** [Watch on YouTube](https://youtu.be/dfAV6JnDUes?si=SCMl2X967B55vZVJ)
 
 ---
 
@@ -535,7 +532,6 @@ This project is licensed under the **MIT License** — see [LICENSE](LICENSE) fo
 
 **Prolytic** — *Stop guessing. Start knowing.*
 
-[⬆ Back to Top](#-prolytic)
 
 </div>
 
