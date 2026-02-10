@@ -374,6 +374,13 @@ Base recommendations on actual ${niche || 'creator'} trends and proven viral for
         rateLimitExceeded: true
       });
     }
+
+    if (error?.status === 403 || error?.message?.includes('403') || error?.message?.includes('CONSUMER_SUSPENDED') || error?.message?.includes('Permission denied')) {
+      return res.status(403).json({ 
+        error: 'API key is invalid or suspended. Please enter a new valid API key.',
+        invalidKey: true
+      });
+    }
     
     res.status(500).json({ 
       error: error instanceof Error ? error.message : 'Idea generation failed.' 
@@ -504,6 +511,13 @@ Be brutally honest. Reference actual ${niche || 'viral'} scripts that work.`;
         rateLimitExceeded: true
       });
     }
+
+    if (error?.status === 403 || error?.message?.includes('403') || error?.message?.includes('CONSUMER_SUSPENDED') || error?.message?.includes('Permission denied')) {
+      return res.status(403).json({ 
+        error: 'API key is invalid or suspended. Please enter a new valid API key.',
+        invalidKey: true
+      });
+    }
     
     res.status(500).json({ 
       error: error instanceof Error ? error.message : 'Script analysis failed.' 
@@ -610,6 +624,13 @@ Generate 5-7 posts across the specified platforms. Make the campaign specific to
         rateLimitExceeded: true
       });
     }
+
+    if (error?.status === 403 || error?.message?.includes('403') || error?.message?.includes('CONSUMER_SUSPENDED') || error?.message?.includes('Permission denied')) {
+      return res.status(403).json({ 
+        error: 'API key is invalid or suspended. Please enter a new valid API key.',
+        invalidKey: true
+      });
+    }
     
     res.status(500).json({ 
       error: error instanceof Error ? error.message : 'Campaign generation failed.' 
@@ -710,6 +731,13 @@ Make scripts specific to ${adFormat} format and ${brandVoice} tone.`;
         rateLimitExceeded: true
       });
     }
+
+    if (error?.status === 403 || error?.message?.includes('403') || error?.message?.includes('CONSUMER_SUSPENDED') || error?.message?.includes('Permission denied')) {
+      return res.status(403).json({ 
+        error: 'API key is invalid or suspended. Please enter a new valid API key.',
+        invalidKey: true
+      });
+    }
     
     res.status(500).json({ 
       error: error instanceof Error ? error.message : 'Ad script generation failed.' 
@@ -779,6 +807,13 @@ app.post('/api/analyze', upload.single('video'), async (req, res) => {
       return res.status(429).json({ 
         error: 'API rate limit exceeded. Please wait a moment and try again, or use a smaller video.',
         rateLimitExceeded: true
+      });
+    }
+
+    if (error?.status === 403 || error?.message?.includes('403') || error?.message?.includes('CONSUMER_SUSPENDED') || error?.message?.includes('Permission denied')) {
+      return res.status(403).json({ 
+        error: 'API key is invalid or suspended. Please enter a new valid API key.',
+        invalidKey: true
       });
     }
     
@@ -880,6 +915,13 @@ app.post('/api/analyze/shadow-audience', async (req, res) => {
       return res.status(429).json({ 
         error: 'API rate limit exceeded. Please wait or use your own API key.',
         rateLimitExceeded: true 
+      });
+    }
+
+    if (error?.status === 403 || error?.message?.includes('403') || error?.message?.includes('CONSUMER_SUSPENDED') || error?.message?.includes('Permission denied')) {
+      return res.status(403).json({ 
+        error: 'API key is invalid or suspended. Please enter a new valid API key.',
+        invalidKey: true
       });
     }
     
@@ -999,6 +1041,13 @@ Return ONLY valid JSON (no markdown):
       return res.status(429).json({ 
         error: 'API rate limit exceeded. Please wait a moment and try again, or use a smaller video.',
         rateLimitExceeded: true
+      });
+    }
+
+    if (error?.status === 403 || error?.message?.includes('403') || error?.message?.includes('CONSUMER_SUSPENDED') || error?.message?.includes('Permission denied')) {
+      return res.status(403).json({ 
+        error: 'API key is invalid or suspended. Please enter a new valid API key.',
+        invalidKey: true
       });
     }
     

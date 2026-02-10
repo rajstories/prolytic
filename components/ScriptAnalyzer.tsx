@@ -67,9 +67,11 @@ const ScriptAnalyzer: React.FC = () => {
 
       const data = await response.json();
 
-      if (response.status === 429) {
+      if (response.status === 429 || response.status === 403) {
         triggerKeyModal();
-        setError('Rate limit exceeded. Please add your own API key.');
+        setError(response.status === 403 
+          ? 'API key is invalid or suspended. Please enter a new valid key.' 
+          : 'Rate limit exceeded. Please add your own API key.');
         return;
       }
 

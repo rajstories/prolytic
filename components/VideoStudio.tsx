@@ -115,10 +115,12 @@ const VideoStudio: React.FC = () => {
     } catch (err) {
       let message = err instanceof Error ? err.message : 'Video analysis failed.';
       
-      // Check if it's a rate limit error
-      if (message.includes('rate limit') || message.includes('429') || message.includes('Too Many Requests')) {
-        setError(message);
-        triggerKeyModal(); // Show modal on rate limit
+      // Check if it's a rate limit or invalid key error
+      if (message.includes('rate limit') || message.includes('429') || message.includes('Too Many Requests') || message.includes('403') || message.includes('suspended') || message.includes('Permission denied')) {
+        setError(message.includes('403') || message.includes('suspended') 
+          ? 'API key is invalid or suspended. Please enter a new valid key.'
+          : message);
+        triggerKeyModal();
         return;
       }
       

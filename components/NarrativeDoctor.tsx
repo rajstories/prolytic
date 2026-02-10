@@ -122,9 +122,11 @@ export const NarrativeDoctor: React.FC = () => {
         const payload = await response.json().catch(() => ({}));
         const errorMsg = payload?.error || 'Narrative analysis failed.';
         
-        // Check for rate limit
-        if (errorMsg.includes('rate limit') || errorMsg.includes('429') || response.status === 429) {
-          setError(errorMsg);
+        // Check for rate limit or invalid key
+        if (errorMsg.includes('rate limit') || errorMsg.includes('429') || response.status === 429 || errorMsg.includes('403') || response.status === 403 || errorMsg.includes('suspended') || errorMsg.includes('Permission denied')) {
+          setError(response.status === 403 || errorMsg.includes('suspended')
+            ? 'API key is invalid or suspended. Please enter a new valid key.'
+            : errorMsg);
           triggerKeyModal();
           setIsRunning(false);
           return;

@@ -51,7 +51,7 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({
               <div className="flex items-start justify-between mb-4">
                 <div>
                   <h2 className="text-2xl font-bold text-white mb-2">
-                    🔑 API Rate Limit Reached
+                    🔑 Enter Your API Key
                   </h2>
                   <p className="text-gray-400 text-sm">
                     Enter your own Google Gemini API key to continue
