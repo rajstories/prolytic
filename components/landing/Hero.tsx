@@ -1,11 +1,14 @@
 import React from 'react';
 import { TrendingUp, CheckCircle2, ChevronRight, Zap } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface HeroProps {
   onOpenModal: () => void;
 }
 
 export const Hero: React.FC<HeroProps> = ({ onOpenModal }) => {
+  const navigate = useNavigate();
+
   return (
     <section className="pt-24 pb-32 md:pt-32 md:pb-40 overflow-hidden bg-white">
       <div className="max-w-7xl mx-auto px-6">
@@ -35,7 +38,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenModal }) => {
 
           <div className="max-w-lg mx-auto relative flex flex-col items-center">
             <button
-              onClick={onOpenModal}
+              onClick={() => navigate('/onboarding')}
               className="w-full md:w-auto px-10 py-5 bg-brand-blue hover:bg-blue-700 text-white font-bold text-xl rounded-xl transition-all shadow-xl shadow-blue-500/30 hover:shadow-blue-500/50 hover:-translate-y-1 active:scale-95 flex items-center justify-center gap-3"
             >
               Build Your First Viral Clip{' '}
