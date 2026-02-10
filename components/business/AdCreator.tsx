@@ -75,23 +75,23 @@ export const AdCreator: React.FC = () => {
   };
 
   return (
-    <div className="p-8 max-w-7xl mx-auto">
-      <header className="mb-8">
-        <h2 className="text-3xl font-bold text-slate-900">Ad Creator</h2>
-        <p className="text-slate-600 mt-2">Generate high-conversion video ad scripts with AI</p>
+    <div className="px-10 py-10 max-w-[1200px] mx-auto">
+      <header className="mb-10">
+        <h2 className="text-[2rem] font-bold tracking-tight text-slate-900">Ad Creator</h2>
+        <p className="text-[15px] text-slate-500 mt-1">Generate high-conversion video ad scripts with AI</p>
       </header>
 
       {error && (
-        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-          <p className="text-sm text-red-700">{error}</p>
+        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl">
+          <p className="text-[13px] text-red-600 font-medium">{error}</p>
         </div>
       )}
 
       {/* Input Form */}
-      <div className="bg-white rounded-xl border border-slate-200 p-6 mb-8">
+      <div className="bg-white rounded-2xl border border-slate-200/80 p-7 mb-8 shadow-sm">
         <div className="space-y-6">
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
+            <label className="block text-[11px] font-medium text-slate-400 uppercase tracking-wider mb-2">
               Product/Service Description
             </label>
             <textarea
@@ -99,19 +99,19 @@ export const AdCreator: React.FC = () => {
               onChange={(e) => setProductDescription(e.target.value)}
               placeholder="Describe your product, its benefits, and unique selling points..."
               rows={4}
-              className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="w-full px-4 py-3 border border-slate-200 rounded-xl text-[14px] text-slate-900 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-300 transition resize-none"
             />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
+              <label className="block text-[11px] font-medium text-slate-400 uppercase tracking-wider mb-2">
                 Ad Format
               </label>
               <select
                 value={adFormat}
                 onChange={(e) => setAdFormat(e.target.value as any)}
-                className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="w-full px-4 py-3 border border-slate-200 rounded-xl text-[14px] text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-300 transition appearance-none bg-white"
               >
                 <option value="story">Instagram/Facebook Story Ad</option>
                 <option value="reel">Instagram Reel / TikTok Ad</option>
@@ -121,13 +121,13 @@ export const AdCreator: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
+              <label className="block text-[11px] font-medium text-slate-400 uppercase tracking-wider mb-2">
                 Call-to-Action
               </label>
               <select
                 value={cta}
                 onChange={(e) => setCta(e.target.value)}
-                className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="w-full px-4 py-3 border border-slate-200 rounded-xl text-[14px] text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-300 transition appearance-none bg-white"
               >
                 <option value="Shop Now">Shop Now</option>
                 <option value="Learn More">Learn More</option>
@@ -138,30 +138,30 @@ export const AdCreator: React.FC = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-            <div className="p-4 bg-slate-50 rounded-lg">
-              <p className="text-slate-500 mb-1">Brand Voice</p>
-              <p className="font-medium text-slate-900">{userProfile.brandVoice?.join(', ') || 'Not set'}</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="p-4 bg-slate-50/80 rounded-xl border border-slate-100">
+              <p className="text-[11px] font-medium text-slate-400 uppercase tracking-wider mb-1">Brand Voice</p>
+              <p className="text-[14px] font-semibold text-slate-900">{userProfile.brandVoice?.join(', ') || '—'}</p>
             </div>
-            <div className="p-4 bg-slate-50 rounded-lg">
-              <p className="text-slate-500 mb-1">Company</p>
-              <p className="font-medium text-slate-900">{userProfile.companyName || 'Not set'}</p>
+            <div className="p-4 bg-slate-50/80 rounded-xl border border-slate-100">
+              <p className="text-[11px] font-medium text-slate-400 uppercase tracking-wider mb-1">Company</p>
+              <p className="text-[14px] font-semibold text-slate-900">{userProfile.companyName || '—'}</p>
             </div>
           </div>
 
           <button
             onClick={handleGenerate}
             disabled={loading || !productDescription.trim()}
-            className="w-full bg-purple-600 text-white py-3 rounded-lg font-medium hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+            className="w-full bg-slate-900 text-white py-3.5 rounded-xl text-[14px] font-semibold hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 shadow-sm"
           >
             {loading ? (
               <>
-                <Loader className="w-5 h-5" />
-                Generating Ad Scripts...
+                <Loader className="w-4 h-4 animate-spin" />
+                Generating Ad Scripts…
               </>
             ) : (
               <>
-                <Film className="w-5 h-5" />
+                <Film className="w-4 h-4" />
                 Generate Ad Scripts
               </>
             )}
@@ -173,39 +173,39 @@ export const AdCreator: React.FC = () => {
       {result && (
         <div className="space-y-6">
           {/* Scripts */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             {result.scripts.map((script, idx) => (
-              <div key={idx} className="bg-white rounded-xl border border-slate-200 p-6">
+              <div key={idx} className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-sm">
                 <div className="mb-4">
-                  <span className="px-3 py-1 bg-purple-50 text-purple-700 rounded-full text-sm font-medium">
+                  <span className="px-3 py-1 bg-slate-900 text-white rounded-full text-[11px] font-semibold">
                     {script.version}
                   </span>
                 </div>
 
                 <div className="space-y-4">
                   <div>
-                    <p className="text-xs text-slate-500 mb-1">HOOK (0-3 seconds)</p>
-                    <p className="text-sm font-medium text-slate-900">{script.hook}</p>
+                    <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Hook (0-3s)</p>
+                    <p className="text-[13px] font-semibold text-slate-900">{script.hook}</p>
                   </div>
 
                   <div>
-                    <p className="text-xs text-slate-500 mb-1">BODY</p>
-                    <p className="text-sm text-slate-700">{script.body}</p>
+                    <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Body</p>
+                    <p className="text-[13px] text-slate-600 leading-relaxed">{script.body}</p>
                   </div>
 
                   <div>
-                    <p className="text-xs text-slate-500 mb-1">CALL-TO-ACTION</p>
-                    <p className="text-sm font-medium text-slate-900">{script.cta}</p>
+                    <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Call-to-Action</p>
+                    <p className="text-[13px] font-semibold text-slate-900">{script.cta}</p>
                   </div>
 
-                  <div className="pt-4 border-t border-slate-200">
-                    <p className="text-xs text-slate-500 mb-1">MUSIC SUGGESTION</p>
-                    <p className="text-sm text-slate-700">{script.musicSuggestion}</p>
+                  <div className="pt-4 border-t border-slate-100">
+                    <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Music Suggestion</p>
+                    <p className="text-[13px] text-slate-600">{script.musicSuggestion}</p>
                   </div>
 
                   <div>
-                    <p className="text-xs text-slate-500 mb-1">VISUAL DIRECTION</p>
-                    <p className="text-sm text-slate-700">{script.visualDirection}</p>
+                    <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Visual Direction</p>
+                    <p className="text-[13px] text-slate-600">{script.visualDirection}</p>
                   </div>
                 </div>
               </div>
@@ -214,12 +214,12 @@ export const AdCreator: React.FC = () => {
 
           {/* Copy Variants */}
           {result.copyVariants && result.copyVariants.length > 0 && (
-            <div className="bg-white rounded-xl border border-slate-200 p-6">
-              <h3 className="text-lg font-semibold text-slate-900 mb-4">Copy Variants for A/B Testing</h3>
+            <div className="bg-white rounded-2xl border border-slate-200/80 p-7 shadow-sm">
+              <h3 className="text-lg font-bold text-slate-900 mb-4 tracking-tight">Copy Variants for A/B Testing</h3>
               <div className="space-y-3">
                 {result.copyVariants.map((variant, idx) => (
-                  <div key={idx} className="p-4 bg-slate-50 rounded-lg">
-                    <p className="text-sm text-slate-700">{variant}</p>
+                  <div key={idx} className="p-4 bg-slate-50/80 rounded-xl border border-slate-100">
+                    <p className="text-[13px] text-slate-600 leading-relaxed">{variant}</p>
                   </div>
                 ))}
               </div>
@@ -229,9 +229,11 @@ export const AdCreator: React.FC = () => {
       )}
 
       {!result && !loading && (
-        <div className="text-center py-12 border-2 border-dashed border-slate-200 rounded-xl">
-          <Film className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-          <p className="text-slate-400">Describe your product to generate ad scripts</p>
+        <div className="flex flex-col items-center justify-center py-16 border-2 border-dashed border-slate-200 rounded-2xl">
+          <div className="w-12 h-12 rounded-xl bg-slate-50 flex items-center justify-center mb-4">
+            <Film className="w-5 h-5 text-slate-300" />
+          </div>
+          <p className="text-[13px] text-slate-400">Describe your product to generate ad scripts</p>
         </div>
       )}
 

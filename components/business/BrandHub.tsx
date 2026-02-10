@@ -10,137 +10,133 @@ export const BrandHub: React.FC = () => {
   const quickActions = [
     {
       title: 'New Campaign',
-      description: 'Generate a complete content marketing campaign',
+      description: 'Generate a complete content marketing campaign with AI strategy',
       icon: Megaphone,
-      color: 'bg-indigo-50 text-indigo-600 border-indigo-200',
-      path: '/dashboard/brand/campaign'
+      accent: '#2563EB',
+      bg: '#EFF6FF',
+      path: '/dashboard/brand/campaign',
     },
     {
       title: 'Create Ad',
-      description: 'Generate high-conversion video ad scripts',
+      description: 'Generate high-conversion video ad scripts for any platform',
       icon: Film,
-      color: 'bg-purple-50 text-purple-600 border-purple-200',
-      path: '/dashboard/brand/ad'
+      accent: '#7C3AED',
+      bg: '#F5F3FF',
+      path: '/dashboard/brand/ad',
     },
     {
       title: 'Define Voice',
-      description: 'Set your brand tone and personality',
+      description: 'Set your brand tone, personality and messaging guidelines',
       icon: Mic,
-      color: 'bg-emerald-50 text-emerald-600 border-emerald-200',
-      path: '/dashboard/brand/voice'
-    }
+      accent: '#0D9488',
+      bg: '#F0FDFA',
+      path: '/dashboard/brand/voice',
+    },
+  ];
+
+  const stats = [
+    { label: 'Campaigns Created', value: '0', icon: Megaphone, accent: '#2563EB', bg: '#EFF6FF' },
+    { label: 'Ads Generated', value: '0', icon: Film, accent: '#7C3AED', bg: '#F5F3FF' },
+    { label: 'Content Pieces', value: '0', icon: TrendingUp, accent: '#0D9488', bg: '#F0FDFA' },
+  ];
+
+  const profileFields = [
+    { label: 'Company', value: userProfile.companyName },
+    { label: 'Offer Type', value: userProfile.offer?.replace('-', ' ') },
+    { label: 'Target Audience', value: userProfile.audience },
+    { label: 'Brand Voice', value: userProfile.brandVoice?.join(', ') },
+    { label: 'Content Budget', value: userProfile.contentBudget },
+    { label: 'Active Platforms', value: userProfile.platforms?.join(', ') },
   ];
 
   return (
-    <div className="p-8 max-w-7xl mx-auto">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-slate-900">
-          Welcome back{userProfile.companyName ? `, ${userProfile.companyName}` : ''}!
+    <div className="px-10 py-10 max-w-[1200px] mx-auto">
+      {/* ── Header ────────────────────────────────────────────── */}
+      <div className="mb-10">
+        <h1 className="text-[2rem] font-bold tracking-tight text-slate-900">
+          Welcome back{userProfile.companyName ? `, ${userProfile.companyName}` : ''}
         </h1>
-        <p className="text-slate-600 mt-2">
-          Your AI-powered brand marketing workspace
-        </p>
+        <p className="text-[15px] text-slate-500 mt-1">Your AI-powered brand marketing workspace</p>
       </div>
 
-      {/* Brand Profile Card */}
-      <div className="bg-white rounded-xl border border-slate-200 p-6 mb-8">
-        <h2 className="text-lg font-semibold text-slate-900 mb-4">Brand Profile</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div>
-            <p className="text-xs text-slate-500 mb-1">Company</p>
-            <p className="text-sm font-medium text-slate-900">{userProfile.companyName || 'Not set'}</p>
-          </div>
-          <div>
-            <p className="text-xs text-slate-500 mb-1">Offer Type</p>
-            <p className="text-sm font-medium text-slate-900 capitalize">{userProfile.offer?.replace('-', ' ') || 'Not set'}</p>
-          </div>
-          <div>
-            <p className="text-xs text-slate-500 mb-1">Target Audience</p>
-            <p className="text-sm font-medium text-slate-900">{userProfile.audience || 'Not set'}</p>
-          </div>
-          <div>
-            <p className="text-xs text-slate-500 mb-1">Brand Voice</p>
-            <p className="text-sm font-medium text-slate-900">
-              {userProfile.brandVoice?.join(', ') || 'Not set'}
-            </p>
-          </div>
-          <div>
-            <p className="text-xs text-slate-500 mb-1">Content Budget</p>
-            <p className="text-sm font-medium text-slate-900">{userProfile.contentBudget || 'Not set'}</p>
-          </div>
-          <div>
-            <p className="text-xs text-slate-500 mb-1">Active Platforms</p>
-            <p className="text-sm font-medium text-slate-900">
-              {userProfile.platforms?.join(', ') || 'Not set'}
-            </p>
-          </div>
+      {/* ── Brand Profile ─────────────────────────────────────── */}
+      <div className="bg-white rounded-2xl border border-slate-200/80 p-7 mb-8 shadow-sm">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-[15px] font-semibold text-slate-900 tracking-tight">Brand Profile</h2>
+          <span className="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Overview</span>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-x-10 gap-y-5">
+          {profileFields.map((f) => (
+            <div key={f.label}>
+              <p className="text-[11px] font-medium text-slate-400 uppercase tracking-wider mb-1">{f.label}</p>
+              <p className="text-[14px] font-semibold text-slate-900 capitalize">{f.value || '—'}</p>
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="bg-white rounded-xl border border-slate-200 p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs text-slate-500 mb-1">Campaigns Created</p>
-              <p className="text-2xl font-bold text-slate-900">0</p>
+      {/* ── Stats ─────────────────────────────────────────────── */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-10">
+        {stats.map((s) => {
+          const Icon = s.icon;
+          return (
+            <div
+              key={s.label}
+              className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-sm flex items-center justify-between"
+            >
+              <div>
+                <p className="text-[11px] font-medium text-slate-400 uppercase tracking-wider mb-1">{s.label}</p>
+                <p className="text-3xl font-bold text-slate-900 tracking-tight">{s.value}</p>
+              </div>
+              <div
+                className="w-12 h-12 rounded-xl flex items-center justify-center"
+                style={{ background: s.bg }}
+              >
+                <Icon className="w-5 h-5" style={{ color: s.accent }} />
+              </div>
             </div>
-            <div className="w-12 h-12 bg-indigo-50 rounded-lg flex items-center justify-center">
-              <Megaphone className="w-6 h-6 text-indigo-600" />
-            </div>
-          </div>
-        </div>
-        <div className="bg-white rounded-xl border border-slate-200 p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs text-slate-500 mb-1">Ads Generated</p>
-              <p className="text-2xl font-bold text-slate-900">0</p>
-            </div>
-            <div className="w-12 h-12 bg-purple-50 rounded-lg flex items-center justify-center">
-              <Film className="w-6 h-6 text-purple-600" />
-            </div>
-          </div>
-        </div>
-        <div className="bg-white rounded-xl border border-slate-200 p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs text-slate-500 mb-1">Content Pieces</p>
-              <p className="text-2xl font-bold text-slate-900">0</p>
-            </div>
-            <div className="w-12 h-12 bg-emerald-50 rounded-lg flex items-center justify-center">
-              <TrendingUp className="w-6 h-6 text-emerald-600" />
-            </div>
-          </div>
-        </div>
+          );
+        })}
       </div>
 
-      {/* Quick Actions */}
-      <div>
-        <h2 className="text-lg font-semibold text-slate-900 mb-4">Quick Actions</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {/* ── Quick Actions ─────────────────────────────────────── */}
+      <div className="mb-10">
+        <h2 className="text-[15px] font-semibold text-slate-900 tracking-tight mb-5">Quick Actions</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           {quickActions.map((action) => {
             const Icon = action.icon;
             return (
               <button
                 key={action.title}
                 onClick={() => navigate(action.path)}
-                className={`text-left p-6 rounded-xl border transition-all hover:shadow-md ${action.color}`}
+                className="group text-left bg-white rounded-2xl border border-slate-200/80 p-6 shadow-sm hover:shadow-md hover:border-slate-300 transition-all"
               >
-                <Icon className="w-8 h-8 mb-3" />
-                <h3 className="text-lg font-semibold mb-2">{action.title}</h3>
-                <p className="text-sm opacity-80">{action.description}</p>
+                <div
+                  className="w-10 h-10 rounded-xl flex items-center justify-center mb-4"
+                  style={{ background: action.bg }}
+                >
+                  <Icon className="w-5 h-5" style={{ color: action.accent }} />
+                </div>
+                <h3 className="text-[15px] font-semibold text-slate-900 mb-1 group-hover:text-slate-700 transition-colors">
+                  {action.title}
+                </h3>
+                <p className="text-[13px] text-slate-400 leading-relaxed">{action.description}</p>
               </button>
             );
           })}
         </div>
       </div>
 
-      {/* Recent Activity */}
-      <div className="mt-8 bg-white rounded-xl border border-slate-200 p-6">
-        <h2 className="text-lg font-semibold text-slate-900 mb-4">Recent Activity</h2>
-        <div className="text-center py-12">
-          <p className="text-slate-400 text-sm">No activity yet. Start by creating your first campaign!</p>
+      {/* ── Recent Activity ───────────────────────────────────── */}
+      <div className="bg-white rounded-2xl border border-slate-200/80 p-7 shadow-sm">
+        <h2 className="text-[15px] font-semibold text-slate-900 tracking-tight mb-6">Recent Activity</h2>
+        <div className="flex flex-col items-center justify-center py-14">
+          <div className="w-12 h-12 rounded-xl bg-slate-50 flex items-center justify-center mb-4">
+            <TrendingUp className="w-5 h-5 text-slate-300" />
+          </div>
+          <p className="text-[13px] text-slate-400 text-center">
+            No activity yet. Create your first campaign to get started.
+          </p>
         </div>
       </div>
     </div>

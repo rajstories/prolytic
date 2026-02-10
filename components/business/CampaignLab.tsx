@@ -82,23 +82,23 @@ export const CampaignLab: React.FC = () => {
   };
 
   return (
-    <div className="p-8 max-w-7xl mx-auto">
-      <header className="mb-8">
-        <h2 className="text-3xl font-bold text-slate-900">Campaign Lab</h2>
-        <p className="text-slate-600 mt-2">Generate complete content marketing campaigns with AI</p>
+    <div className="px-10 py-10 max-w-[1200px] mx-auto">
+      <header className="mb-10">
+        <h2 className="text-[2rem] font-bold tracking-tight text-slate-900">Campaign Lab</h2>
+        <p className="text-[15px] text-slate-500 mt-1">Generate complete content marketing campaigns with AI</p>
       </header>
 
       {error && (
-        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-          <p className="text-sm text-red-700">{error}</p>
+        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl">
+          <p className="text-[13px] text-red-600 font-medium">{error}</p>
         </div>
       )}
 
       {/* Input Form */}
-      <div className="bg-white rounded-xl border border-slate-200 p-6 mb-8">
+      <div className="bg-white rounded-2xl border border-slate-200/80 p-7 mb-8 shadow-sm">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
+            <label className="block text-[11px] font-medium text-slate-400 uppercase tracking-wider mb-2">
               Campaign Name
             </label>
             <input
@@ -106,18 +106,18 @@ export const CampaignLab: React.FC = () => {
               value={campaignName}
               onChange={(e) => setCampaignName(e.target.value)}
               placeholder="e.g., Q1 Product Launch"
-              className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-4 py-3 border border-slate-200 rounded-xl text-[14px] text-slate-900 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-300 transition"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
+            <label className="block text-[11px] font-medium text-slate-400 uppercase tracking-wider mb-2">
               Campaign Goal
             </label>
             <select
               value={goal}
               onChange={(e) => setGoal(e.target.value as any)}
-              className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-4 py-3 border border-slate-200 rounded-xl text-[14px] text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-300 transition appearance-none bg-white"
             >
               <option value="awareness">Brand Awareness</option>
               <option value="leads">Lead Generation</option>
@@ -127,34 +127,34 @@ export const CampaignLab: React.FC = () => {
           </div>
         </div>
 
-        <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-          <div className="p-4 bg-slate-50 rounded-lg">
-            <p className="text-slate-500 mb-1">Product/Service</p>
-            <p className="font-medium text-slate-900 capitalize">{userProfile.offer?.replace('-', ' ') || 'Not set'}</p>
+        <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="p-4 bg-slate-50/80 rounded-xl border border-slate-100">
+            <p className="text-[11px] font-medium text-slate-400 uppercase tracking-wider mb-1">Product/Service</p>
+            <p className="text-[14px] font-semibold text-slate-900 capitalize">{userProfile.offer?.replace('-', ' ') || '—'}</p>
           </div>
-          <div className="p-4 bg-slate-50 rounded-lg">
-            <p className="text-slate-500 mb-1">Target Audience</p>
-            <p className="font-medium text-slate-900">{userProfile.audience || 'Not set'}</p>
+          <div className="p-4 bg-slate-50/80 rounded-xl border border-slate-100">
+            <p className="text-[11px] font-medium text-slate-400 uppercase tracking-wider mb-1">Target Audience</p>
+            <p className="text-[14px] font-semibold text-slate-900">{userProfile.audience || '—'}</p>
           </div>
-          <div className="p-4 bg-slate-50 rounded-lg">
-            <p className="text-slate-500 mb-1">Platforms</p>
-            <p className="font-medium text-slate-900">{userProfile.platforms?.join(', ') || 'Not set'}</p>
+          <div className="p-4 bg-slate-50/80 rounded-xl border border-slate-100">
+            <p className="text-[11px] font-medium text-slate-400 uppercase tracking-wider mb-1">Platforms</p>
+            <p className="text-[14px] font-semibold text-slate-900">{userProfile.platforms?.join(', ') || '—'}</p>
           </div>
         </div>
 
         <button
           onClick={handleGenerate}
           disabled={loading || !campaignName.trim()}
-          className="mt-6 w-full bg-indigo-600 text-white py-3 rounded-lg font-medium hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+          className="mt-6 w-full bg-slate-900 text-white py-3.5 rounded-xl text-[14px] font-semibold hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 shadow-sm"
         >
           {loading ? (
             <>
-              <Loader className="w-5 h-5" />
-              Generating Campaign...
+              <Loader className="w-4 h-4 animate-spin" />
+              Generating Campaign…
             </>
           ) : (
             <>
-              <Megaphone className="w-5 h-5" />
+              <Megaphone className="w-4 h-4" />
               Generate Campaign
             </>
           )}
@@ -165,14 +165,14 @@ export const CampaignLab: React.FC = () => {
       {result && (
         <div className="space-y-6">
           {/* Strategy Overview */}
-          <div className="bg-white rounded-xl border border-slate-200 p-6">
-            <h3 className="text-xl font-semibold text-slate-900 mb-4">{result.campaignName}</h3>
-            <p className="text-slate-600 mb-4">{result.strategy}</p>
+          <div className="bg-white rounded-2xl border border-slate-200/80 p-7 shadow-sm">
+            <h3 className="text-xl font-bold text-slate-900 mb-3 tracking-tight">{result.campaignName}</h3>
+            <p className="text-[14px] text-slate-500 leading-relaxed mb-5">{result.strategy}</p>
             <div>
-              <h4 className="font-medium text-slate-900 mb-2">Content Pillars:</h4>
+              <h4 className="text-[11px] font-medium text-slate-400 uppercase tracking-wider mb-3">Content Pillars</h4>
               <div className="flex flex-wrap gap-2">
                 {result.contentPillars.map((pillar, idx) => (
-                  <span key={idx} className="px-3 py-1 bg-indigo-50 text-indigo-700 rounded-full text-sm">
+                  <span key={idx} className="px-3 py-1.5 bg-slate-900 text-white rounded-full text-[12px] font-medium">
                     {pillar}
                   </span>
                 ))}
@@ -181,29 +181,29 @@ export const CampaignLab: React.FC = () => {
           </div>
 
           {/* Posts */}
-          <div className="bg-white rounded-xl border border-slate-200 p-6">
-            <h3 className="text-xl font-semibold text-slate-900 mb-4">Content Posts</h3>
+          <div className="bg-white rounded-2xl border border-slate-200/80 p-7 shadow-sm">
+            <h3 className="text-lg font-bold text-slate-900 mb-5 tracking-tight">Content Posts</h3>
             <div className="space-y-4">
               {result.posts.map((post, idx) => (
-                <div key={idx} className="border border-slate-200 rounded-lg p-4">
+                <div key={idx} className="border border-slate-200/80 rounded-xl p-5">
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-3">
-                      <span className="px-3 py-1 bg-purple-50 text-purple-700 rounded-full text-sm font-medium">
+                      <span className="px-3 py-1 bg-slate-900 text-white rounded-full text-[11px] font-semibold">
                         {post.platform}
                       </span>
-                      <span className="text-sm text-slate-600">{post.format}</span>
+                      <span className="text-[13px] text-slate-500">{post.format}</span>
                     </div>
-                    <span className="text-xs text-slate-500">{post.bestTimeToPost}</span>
+                    <span className="text-[11px] text-slate-400">{post.bestTimeToPost}</span>
                   </div>
-                  <p className="font-medium text-slate-900 mb-2">Hook: {post.hook}</p>
-                  <p className="text-sm text-slate-600 mb-3">{post.script}</p>
+                  <p className="text-[14px] font-semibold text-slate-900 mb-2">Hook: {post.hook}</p>
+                  <p className="text-[13px] text-slate-500 mb-3 leading-relaxed">{post.script}</p>
                   <div className="flex items-center justify-between">
                     <div className="flex flex-wrap gap-2">
                       {post.hashtags.map((tag, i) => (
-                        <span key={i} className="text-xs text-indigo-600">{tag}</span>
+                        <span key={i} className="text-[11px] text-blue-600 font-medium">{tag}</span>
                       ))}
                     </div>
-                    <span className="text-xs text-emerald-600 font-medium">Est. {post.estimatedReach} reach</span>
+                    <span className="text-[11px] text-emerald-600 font-semibold">Est. {post.estimatedReach} reach</span>
                   </div>
                 </div>
               ))}
@@ -211,17 +211,17 @@ export const CampaignLab: React.FC = () => {
           </div>
 
           {/* Timeline */}
-          <div className="bg-white rounded-xl border border-slate-200 p-6">
-            <h3 className="text-xl font-semibold text-slate-900 mb-4">4-Week Timeline</h3>
-            <div className="space-y-3">
+          <div className="bg-white rounded-2xl border border-slate-200/80 p-7 shadow-sm">
+            <h3 className="text-lg font-bold text-slate-900 mb-5 tracking-tight">4-Week Timeline</h3>
+            <div className="space-y-4">
               {result.timeline.map((week, idx) => (
-                <div key={idx} className="flex gap-4">
-                  <div className="flex-shrink-0 w-16 h-16 bg-indigo-50 rounded-lg flex items-center justify-center">
-                    <span className="text-lg font-bold text-indigo-600">W{week.week}</span>
+                <div key={idx} className="flex gap-5 items-start">
+                  <div className="flex-shrink-0 w-14 h-14 bg-slate-900 rounded-xl flex items-center justify-center">
+                    <span className="text-sm font-bold text-white">W{week.week}</span>
                   </div>
-                  <div className="flex-1">
-                    <p className="font-medium text-slate-900 mb-1">{week.focus}</p>
-                    <ul className="text-sm text-slate-600 space-y-1">
+                  <div className="flex-1 pt-0.5">
+                    <p className="text-[14px] font-semibold text-slate-900 mb-1">{week.focus}</p>
+                    <ul className="text-[13px] text-slate-500 space-y-0.5">
                       {week.deliverables.map((item, i) => (
                         <li key={i}>• {item}</li>
                       ))}
@@ -233,13 +233,13 @@ export const CampaignLab: React.FC = () => {
           </div>
 
           {/* KPIs */}
-          <div className="bg-white rounded-xl border border-slate-200 p-6">
-            <h3 className="text-xl font-semibold text-slate-900 mb-4">Key Performance Indicators</h3>
+          <div className="bg-white rounded-2xl border border-slate-200/80 p-7 shadow-sm">
+            <h3 className="text-lg font-bold text-slate-900 mb-5 tracking-tight">Key Performance Indicators</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {result.kpis.map((kpi, idx) => (
-                <div key={idx} className="p-4 bg-slate-50 rounded-lg">
-                  <p className="text-sm text-slate-600 mb-1">{kpi.metric}</p>
-                  <p className="text-lg font-semibold text-slate-900">{kpi.target}</p>
+                <div key={idx} className="p-4 bg-slate-50/80 rounded-xl border border-slate-100">
+                  <p className="text-[11px] font-medium text-slate-400 uppercase tracking-wider mb-1">{kpi.metric}</p>
+                  <p className="text-lg font-bold text-slate-900">{kpi.target}</p>
                 </div>
               ))}
             </div>
@@ -248,9 +248,11 @@ export const CampaignLab: React.FC = () => {
       )}
 
       {!result && !loading && (
-        <div className="text-center py-12 border-2 border-dashed border-slate-200 rounded-xl">
-          <Megaphone className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-          <p className="text-slate-400">Enter campaign details above to generate your marketing plan</p>
+        <div className="flex flex-col items-center justify-center py-16 border-2 border-dashed border-slate-200 rounded-2xl">
+          <div className="w-12 h-12 rounded-xl bg-slate-50 flex items-center justify-center mb-4">
+            <Megaphone className="w-5 h-5 text-slate-300" />
+          </div>
+          <p className="text-[13px] text-slate-400">Enter campaign details above to generate your marketing plan</p>
         </div>
       )}
 
