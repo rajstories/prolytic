@@ -4,6 +4,7 @@ import { fileURLToPath } from 'url';
 import express from 'express';
 import multer from 'multer';
 import crypto from 'crypto';
+import Bytez from 'bytez.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -26,11 +27,234 @@ app.use(express.json());
 const upload = multer({ storage: multer.memoryStorage() });
 
 const MODEL_ID = 'gemini-2.0-flash';
+const OPENROUTER_URL =
+  process.env.OPENROUTER_API_URL ||
+  process.env.OPENROUTER_BASE_URL ||
+  'https://openrouter.ai/api/v1/chat/completions';
+const OPENROUTER_PRIMARY_MODEL =
+  process.env.OPENROUTER_PRIMARY_MODEL ||
+  process.env.OPENROUTER_MODEL ||
+  process.env.OPENROUTER_TEXT_MODEL ||
+  'z-ai/glm-4.6';
+const OPENROUTER_FALLBACK_MODEL =
+  process.env.OPENROUTER_FALLBACK_MODEL || 'deepseek/deepseek-v3.2';
+const BYTEZ_GEMINI_MODEL =
+  process.env.BYTEZ_GEMINI_MODEL || 'google/gemini-3-pro-preview';
 
-// Helper to get API key from user header or fallback to server key
-const getApiKey = (req: express.Request): string | undefined => {
-  const userApiKey = req.headers['x-gemini-api-key'] as string;
-  return userApiKey || process.env.GEMINI_API_KEY || process.env.API_KEY || process.env.GOOGLE_API_KEY;
+// Gemini key: user-provided header takes priority for multimodal/video routes.
+const getGeminiApiKey = (req: express.Request): string | undefined => {
+  const userApiKey = (req.headers['x-gemini-api-key'] as string | undefined)?.trim();
+  const envKey =
+    process.env.GEMINI_API_KEY?.trim() ||
+    process.env.API_KEY?.trim() ||
+    process.env.GOOGLE_API_KEY?.trim();
+  return userApiKey || envKey;
+};
+
+const getOpenRouterApiKey = (): string | undefined =>
+  process.env.OPENROUTER_API_KEY?.trim() ||
+  process.env.OPEN_ROUTER_API_KEY?.trim() ||
+  process.env.OPENAI_API_KEY?.trim();
+const getBytezApiKey = (): string | undefined =>
+  process.env.BYTEZ_API_KEY?.trim() || process.env.BYTEZ_KEY?.trim();
+
+const makeHttpError = (message: string, status: number) => {
+  const err = new Error(message) as Error & { status?: number };
+  err.status = status;
+  return err;
+};
+
+const isUnauthorizedClientError = (status: number, body: string) => {
+  const normalized = body.toLowerCase();
+  return (
+    status === 401 &&
+    (normalized.includes('unauthorized client') ||
+      normalized.includes('unauthorized_client_error') ||
+      normalized.includes('unauthenticated'))
+  );
+};
+
+const extractOpenRouterText = (payload: any): string => {
+  const content = payload?.choices?.[0]?.message?.content;
+  if (typeof content === 'string') {
+    return content;
+  }
+  if (Array.isArray(content)) {
+    return content
+      .map((part) => (typeof part?.text === 'string' ? part.text : ''))
+      .join('\n')
+      .trim();
+  }
+  return '';
+};
+
+const extractBytezText = (output: any): string => {
+  if (!output) return '';
+  if (typeof output === 'string') return output;
+  if (Array.isArray(output)) {
+    return output
+      .map((item) => {
+        if (typeof item === 'string') return item;
+        if (typeof item?.text === 'string') return item.text;
+        if (typeof item?.content === 'string') return item.content;
+        return '';
+      })
+      .join('\n')
+      .trim();
+  }
+  if (typeof output?.text === 'string') return output.text;
+  if (typeof output?.content === 'string') return output.content;
+  return '';
+};
+
+const buildOpenRouterModelCandidates = (modelName: string): string[] => {
+  const raw = (modelName || '').trim();
+  if (!raw) return [];
+  const candidates = new Set<string>([raw]);
+
+  // Try both namespaced and short aliases to match token allow-lists.
+  if (raw.includes('/')) {
+    candidates.add(raw.split('/').pop() || raw);
+  } else {
+    if (raw.startsWith('glm-')) {
+      candidates.add(`z-ai/${raw}`);
+    }
+    if (raw.startsWith('deepseek-')) {
+      candidates.add(`deepseek/${raw}`);
+    }
+  }
+
+  return Array.from(candidates);
+};
+
+const generateTextWithFallback = async (params: {
+  req: express.Request;
+  systemInstruction: string;
+  promptText: string;
+}) => {
+  const { req, systemInstruction, promptText } = params;
+  let lastProviderError: (Error & { status?: number }) | null = null;
+
+  const openRouterApiKey = getOpenRouterApiKey();
+  if (openRouterApiKey) {
+    const configuredModels = Array.from(
+      new Set([OPENROUTER_PRIMARY_MODEL, OPENROUTER_FALLBACK_MODEL].filter(Boolean))
+    );
+
+    for (const configuredModelName of configuredModels) {
+      const modelCandidates = buildOpenRouterModelCandidates(configuredModelName);
+      for (const modelName of modelCandidates) {
+      try {
+        const response = await fetch(OPENROUTER_URL, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${openRouterApiKey}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            model: modelName,
+            temperature: 0.3,
+            messages: [
+              { role: 'system', content: systemInstruction },
+              { role: 'user', content: promptText }
+            ]
+          })
+        });
+
+        if (!response.ok) {
+          const text = await response.text();
+          console.warn(
+            `[ai-router] OpenRouter failed for model=${modelName}, status=${response.status}, body=${text?.slice(0, 220)}`
+          );
+          if (isUnauthorizedClientError(response.status, text)) {
+            throw makeHttpError(
+              'OpenRouter key is unauthorized for API access. Verify key/token and model permissions.',
+              401
+            );
+          }
+          throw makeHttpError(text || `OpenRouter request failed for ${modelName}.`, response.status);
+        }
+
+        const payload = await response.json();
+        const text = extractOpenRouterText(payload);
+        if (!text) {
+          console.warn(`[ai-router] OpenRouter empty response for model=${modelName}`);
+          throw makeHttpError(`OpenRouter returned empty content for ${modelName}.`, 502);
+        }
+        console.log(`[ai-router] Using OpenRouter model=${modelName}`);
+        return { text, provider: 'openrouter', model: modelName };
+      } catch (error: any) {
+        lastProviderError = error;
+        if (error?.status === 401) {
+          throw error;
+        }
+      }
+      }
+    }
+  }
+
+  const bytezApiKey = getBytezApiKey();
+  if (bytezApiKey) {
+    try {
+      const sdk = new Bytez(bytezApiKey);
+      const model = sdk.model(BYTEZ_GEMINI_MODEL);
+      const result = await model.run([
+        { role: 'system', content: systemInstruction },
+        { role: 'user', content: promptText }
+      ]);
+
+      const errorText =
+        typeof result?.error === 'string'
+          ? result.error
+          : result?.error
+          ? JSON.stringify(result.error)
+          : '';
+      if (errorText) {
+        throw makeHttpError(errorText, 502);
+      }
+
+      const text = extractBytezText(result?.output);
+      if (!text) {
+        throw makeHttpError('Bytez returned empty content.', 502);
+      }
+      console.log(`[ai-router] Using Bytez model=${BYTEZ_GEMINI_MODEL}`);
+      return { text, provider: 'bytez', model: BYTEZ_GEMINI_MODEL };
+    } catch (error: any) {
+      lastProviderError = error;
+      console.warn(
+        `[ai-router] Bytez failed for model=${BYTEZ_GEMINI_MODEL}, message=${String(
+          error?.message || error
+        ).slice(0, 220)}`
+      );
+    }
+  }
+
+  const geminiApiKey = getGeminiApiKey(req);
+  if (geminiApiKey) {
+    try {
+      const genAI = new GoogleGenerativeAI(geminiApiKey);
+      const model = genAI.getGenerativeModel({
+        model: MODEL_ID,
+        systemInstruction,
+        generationConfig: {
+          responseMimeType: 'application/json'
+        }
+      });
+      const result = await model.generateContent([{ text: promptText }]);
+      console.log(`[ai-router] Falling back to Gemini model=${MODEL_ID}`);
+      return { text: result.response.text(), provider: 'gemini', model: MODEL_ID };
+    } catch (error: any) {
+      lastProviderError = error;
+    }
+  }
+
+  if (lastProviderError) {
+    throw lastProviderError;
+  }
+  throw makeHttpError(
+    'Missing AI provider credentials. Configure OPENROUTER_API_KEY or GEMINI_API_KEY.',
+    500
+  );
 };
 
 const FB_APP_ID = process.env.FB_APP_ID;
@@ -261,12 +485,6 @@ app.get('/api/dashboard', async (req, res) => {
 // Video Idea Generator endpoint
 app.post('/api/ideas', async (req, res) => {
   try {
-    const apiKey = getApiKey(req);
-
-    if (!apiKey) {
-      return res.status(500).json({ error: 'Missing Gemini API key.' });
-    }
-
     const { topic, niche, audience, videoLength, subscribers, count = 5 } = req.body as {
       topic: string;
       niche?: string;
@@ -290,37 +508,6 @@ app.post('/api/ideas', async (req, res) => {
     if (audience) {
       contextualPrompt += ` Target audience: ${audience}.`;
     }
-
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({
-      model: MODEL_ID,
-      systemInstruction: contextualPrompt,
-      generationConfig: {
-        responseMimeType: 'application/json',
-        responseSchema: {
-          type: 'object',
-          properties: {
-            ideas: {
-              type: 'array',
-              items: {
-                type: 'object',
-                properties: {
-                  title: { type: 'string' },
-                  logline: { type: 'string' },
-                  targetAudience: { type: 'string' },
-                  viralScore: { type: 'number' },
-                  estimatedViews: { type: 'string' },
-                  reasoning: { type: 'string' },
-                  hook: { type: 'string' }
-                },
-                required: ['title', 'logline', 'viralScore', 'reasoning']
-              }
-            }
-          },
-          required: ['ideas']
-        }
-      }
-    });
 
     // Build detailed prompt
     let promptText = `Generate ${count} viral video ideas for: "${topic}"\n\n`;
@@ -352,14 +539,29 @@ app.post('/api/ideas', async (req, res) => {
 
 Base recommendations on actual ${niche || 'creator'} trends and proven viral formats.`;
 
-    const result = await model.generateContent([{ text: promptText }]);
-    const text = result.response.text();
-    const parsed = parseJsonFromText(text);
+    promptText += `\nReturn ONLY JSON with this structure:
+{
+  "ideas": [
+    {
+      "title": "string",
+      "logline": "string",
+      "targetAudience": "string",
+      "estimatedViews": "string"
+    }
+  ]
+}`;
+
+    const generated = await generateTextWithFallback({
+      req,
+      systemInstruction: contextualPrompt,
+      promptText
+    });
+    const parsed = parseJsonFromText(generated.text);
 
     if (!parsed || !parsed.ideas || !Array.isArray(parsed.ideas)) {
       return res.status(502).json({ 
-        error: 'Failed to parse Gemini response.', 
-        raw: text 
+        error: 'Failed to parse AI response.', 
+        raw: generated.text 
       });
     }
 
@@ -391,12 +593,6 @@ Base recommendations on actual ${niche || 'creator'} trends and proven viral for
 // Script Analyzer endpoint
 app.post('/api/script', async (req, res) => {
   try {
-    const apiKey = getApiKey(req);
-
-    if (!apiKey) {
-      return res.status(500).json({ error: 'Missing Gemini API key.' });
-    }
-
     const { script, niche, goal, struggle, videoLength } = req.body as {
       script: string;
       niche?: string;
@@ -424,49 +620,6 @@ app.post('/api/script', async (req, res) => {
       contextualPrompt += ` Their goal is ${goal}.`;
     }
 
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({
-      model: MODEL_ID,
-      systemInstruction: contextualPrompt,
-      generationConfig: {
-        responseMimeType: 'application/json',
-        responseSchema: {
-          type: 'object',
-          properties: {
-            hookStrength: { type: 'number' },
-            hookAnalysis: { type: 'string' },
-            pacing: { type: 'string' },
-            retentionPrediction: { type: 'number' },
-            dropOffPoints: {
-              type: 'array',
-              items: {
-                type: 'object',
-                properties: {
-                  timestamp: { type: 'string' },
-                  reason: { type: 'string' },
-                  severity: { type: 'string' }
-                }
-              }
-            },
-            improvements: {
-              type: 'array',
-              items: {
-                type: 'object',
-                properties: {
-                  type: { type: 'string' },
-                  suggestion: { type: 'string' },
-                  impact: { type: 'string' },
-                  example: { type: 'string' }
-                }
-              }
-            },
-            overallScore: { type: 'number' }
-          },
-          required: ['hookStrength', 'hookAnalysis', 'retentionPrediction', 'improvements', 'overallScore']
-        }
-      }
-    });
-
     // Build detailed prompt
     let promptText = `Analyze this ${videoLength || 'video'} script ruthlessly:\n\n"${script}"\n\n`;
     
@@ -478,29 +631,58 @@ app.post('/api/script', async (req, res) => {
       promptText += `Focus especially on fixing: ${struggle}\n`;
     }
 
-    promptText += `\nProvide:
-1. hookStrength (0-100): Rate the first 3 seconds
-2. hookAnalysis: Detailed critique of the opening
-3. pacing: Overall pacing assessment
-4. retentionPrediction (0-100): Predicted average retention %
-5. dropOffPoints: Array of specific moments where viewers will leave (timestamp, reason, severity: low/medium/high)
-6. improvements: 3-5 SPECIFIC, actionable fixes (not generic advice). Each must include type, suggestion, impact, and a concrete example
-7. overallScore (0-100): Overall script quality
-
+    promptText += `\nReturn ONLY JSON with this exact structure:
+{
+  "score": 0,
+  "hookStrength": "string",
+  "pacing": "string",
+  "viralPotential": "string",
+  "keyImprovements": ["string"],
+  "reachAnalysis": {
+    "retentionScore": 0,
+    "retentionInsight": "string",
+    "lightingSuggestions": "string",
+    "captionTips": "string"
+  }
+}
 Be brutally honest. Reference actual ${niche || 'viral'} scripts that work.`;
 
-    const result = await model.generateContent([{ text: promptText }]);
-    const text = result.response.text();
-    const parsed = parseJsonFromText(text);
+    const generated = await generateTextWithFallback({
+      req,
+      systemInstruction: contextualPrompt,
+      promptText
+    });
+    const parsed = parseJsonFromText(generated.text);
 
-    if (!parsed || typeof parsed.overallScore !== 'number') {
+    if (!parsed) {
       return res.status(502).json({ 
-        error: 'Failed to parse Gemini response.', 
-        raw: text 
+        error: 'Failed to parse AI response.', 
+        raw: generated.text 
       });
     }
+    const scoreValue = Number(parsed.score ?? parsed.overallScore ?? 0);
+    const normalized = {
+      score: Number.isFinite(scoreValue) ? Math.max(0, Math.min(100, scoreValue)) : 0,
+      hookStrength: String(parsed.hookStrength ?? parsed.hookAnalysis ?? 'Hook needs stronger pattern interrupt.'),
+      pacing: String(parsed.pacing ?? 'Pacing is inconsistent across segments.'),
+      viralPotential: String(parsed.viralPotential ?? 'Moderate viral upside with structural edits.'),
+      keyImprovements: Array.isArray(parsed.keyImprovements)
+        ? parsed.keyImprovements.map((item: unknown) => String(item))
+        : Array.isArray(parsed.improvements)
+        ? parsed.improvements
+            .map((item: any) => String(item?.suggestion || item?.example || item || '').trim())
+            .filter(Boolean)
+            .slice(0, 5)
+        : ['Tighten first 3 seconds', 'Increase visual contrast', 'Add clearer CTA by midpoint'],
+      reachAnalysis: {
+        retentionScore: Number(parsed?.reachAnalysis?.retentionScore ?? parsed.retentionPrediction ?? 55),
+        retentionInsight: String(parsed?.reachAnalysis?.retentionInsight ?? 'Retention drops in the middle section; tighten transitions.'),
+        lightingSuggestions: String(parsed?.reachAnalysis?.lightingSuggestions ?? 'Increase key light contrast and remove flat shadows.'),
+        captionTips: String(parsed?.reachAnalysis?.captionTips ?? 'Use high-contrast kinetic captions for key points.')
+      }
+    };
 
-    res.json(parsed);
+    res.json(normalized);
 
   } catch (error: any) {
     console.error('Script analysis failed:', error);
@@ -528,12 +710,6 @@ Be brutally honest. Reference actual ${niche || 'viral'} scripts that work.`;
 // Campaign Generator endpoint
 app.post('/api/campaign', async (req, res) => {
   try {
-    const apiKey = getApiKey(req);
-
-    if (!apiKey) {
-      return res.status(500).json({ error: 'Missing Gemini API key.' });
-    }
-
     const { campaignName, product, goal, audience, budget, platforms, brandVoice, companyName } = req.body as {
       campaignName: string;
       product?: string;
@@ -550,15 +726,6 @@ app.post('/api/campaign', async (req, res) => {
     }
 
     const systemInstruction = `You are a Brand Strategist and Performance Marketer. Brand voice: ${brandVoice || 'Professional'}. Generate complete, actionable content marketing campaigns.`;
-
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({
-      model: MODEL_ID,
-      systemInstruction,
-      generationConfig: {
-        responseMimeType: 'application/json'
-      }
-    });
 
     let promptText = `Generate a complete content marketing campaign:\n\n`;
     promptText += `Campaign Name: ${campaignName}\n`;
@@ -602,14 +769,17 @@ app.post('/api/campaign', async (req, res) => {
 
 Generate 5-7 posts across the specified platforms. Make the campaign specific to ${goal} goal and ${audience} audience.`;
 
-    const result = await model.generateContent([{ text: promptText }]);
-    const text = result.response.text();
-    const parsed = parseJsonFromText(text);
+    const generated = await generateTextWithFallback({
+      req,
+      systemInstruction,
+      promptText
+    });
+    const parsed = parseJsonFromText(generated.text);
 
     if (!parsed || !parsed.posts) {
       return res.status(502).json({ 
         error: 'Failed to parse campaign response.', 
-        raw: text 
+        raw: generated.text 
       });
     }
 
@@ -641,12 +811,6 @@ Generate 5-7 posts across the specified platforms. Make the campaign specific to
 // Ad Script Generator endpoint
 app.post('/api/ad-script', async (req, res) => {
   try {
-    const apiKey = getApiKey(req);
-
-    if (!apiKey) {
-      return res.status(500).json({ error: 'Missing Gemini API key.' });
-    }
-
     const { productDescription, adFormat, cta, brandVoice, companyName } = req.body as {
       productDescription: string;
       adFormat?: string;
@@ -660,15 +824,6 @@ app.post('/api/ad-script', async (req, res) => {
     }
 
     const systemInstruction = `You are a Direct Response Ad Creator. Brand voice: ${brandVoice || 'Professional'}. Create high-conversion ad scripts.`;
-
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({
-      model: MODEL_ID,
-      systemInstruction,
-      generationConfig: {
-        responseMimeType: 'application/json'
-      }
-    });
 
     let promptText = `Generate 3 video ad script variations:\n\n`;
     promptText += `Product: ${productDescription}\n`;
@@ -709,14 +864,17 @@ app.post('/api/ad-script', async (req, res) => {
 
 Make scripts specific to ${adFormat} format and ${brandVoice} tone.`;
 
-    const result = await model.generateContent([{ text: promptText }]);
-    const text = result.response.text();
-    const parsed = parseJsonFromText(text);
+    const generated = await generateTextWithFallback({
+      req,
+      systemInstruction,
+      promptText
+    });
+    const parsed = parseJsonFromText(generated.text);
 
     if (!parsed || !parsed.scripts) {
       return res.status(502).json({ 
         error: 'Failed to parse ad script response.', 
-        raw: text 
+        raw: generated.text 
       });
     }
 
@@ -747,7 +905,7 @@ Make scripts specific to ${adFormat} format and ${brandVoice} tone.`;
 
 app.post('/api/analyze', upload.single('video'), async (req, res) => {
   try {
-    const apiKey = getApiKey(req);
+    const apiKey = getGeminiApiKey(req);
 
     if (!apiKey) {
       return res.status(500).json({ error: 'Missing Gemini API key.' });
@@ -846,7 +1004,7 @@ app.post('/api/analyze/shadow-audience', async (req, res) => {
   ];
 
   try {
-    const apiKey = getApiKey(req);
+    const apiKey = getGeminiApiKey(req);
 
     if (!apiKey) {
       return res.status(200).json(fallback);
@@ -933,7 +1091,7 @@ app.post('/api/analyze/shadow-audience', async (req, res) => {
 // Narrative Structure Analysis endpoint
 app.post('/api/analyze/narrative-structure', upload.single('video'), async (req, res) => {
   try {
-    const apiKey = getApiKey(req);
+    const apiKey = getGeminiApiKey(req);
 
     if (!apiKey) {
       return res.status(500).json({ error: 'Gemini API key not configured.' });
@@ -1108,6 +1266,10 @@ app.get('*', (req, res) => {
 });
 
 const port = Number(process.env.PORT) || 8080;
-app.listen(port, '0.0.0.0', () => {
-  console.log(`Server listening on port ${port}`);
+const host =
+  process.env.HOST ||
+  (process.env.NODE_ENV === 'production' ? '0.0.0.0' : '127.0.0.1');
+
+app.listen(port, host, () => {
+  console.log(`Server listening on ${host}:${port}`);
 });

@@ -38,7 +38,7 @@ const ScriptAnalyzer: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   
-  const { headers, triggerKeyModal, showKeyModal, closeKeyModal, apiKey, setApiKey } = useApiKey();
+  const { headers, showKeyModal, closeKeyModal, apiKey, setApiKey } = useApiKey();
   const { userProfile } = useUserProfile();
   
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -67,11 +67,13 @@ const ScriptAnalyzer: React.FC = () => {
 
       const data = await response.json();
 
-      if (response.status === 429 || response.status === 403) {
-        triggerKeyModal();
-        setError(response.status === 403 
-          ? 'API key is invalid or suspended. Please enter a new valid key.' 
-          : 'Rate limit exceeded. Please add your own API key.');
+      if (response.status === 403) {
+        setError('Provider rejected the request. Check server API keys and retry.');
+        return;
+      }
+
+      if (response.status === 429) {
+        setError('Provider is temporarily rate-limited. Please retry in a moment.');
         return;
       }
 
@@ -122,10 +124,10 @@ const ScriptAnalyzer: React.FC = () => {
 
   return (
     <div className="p-6 h-full flex flex-col min-h-0 bg-white">
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-6 min-h-0">
+      <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-6 min-h-0 min-w-0">
         
         {/* Left Panel: Video Workspace */}
-        <div className="flex flex-col bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
+        <div className="flex flex-col bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden min-w-0">
           <div className="px-6 py-4 border-b border-slate-200 bg-white flex justify-between items-center">
             <h3 className="text-slate-900 font-semibold flex items-center gap-2.5">
               <Film className="w-4 h-4 text-indigo-600" />
@@ -274,8 +276,9 @@ const ScriptAnalyzer: React.FC = () => {
                             {analysis.reachAnalysis?.retentionInsight}
                           </p>
                           {/* Muted Retention Chart */}
-                           <div className="h-24 w-full bg-emerald-50/50 rounded-md overflow-hidden">
-                            <ResponsiveContainer width="100%" height="100%">
+                           <div className="h-24 w-full min-w-0 bg-emerald-50/50 rounded-md overflow-hidden">
+                            {retentionMockData.length > 0 ? (
+                            <ResponsiveContainer width="100%" height="100%" minWidth={0}>
                               <AreaChart data={retentionMockData}>
                                 <defs>
                                   <linearGradient id="retentionGradient" x1="0" y1="0" x2="0" y2="1">
@@ -287,6 +290,7 @@ const ScriptAnalyzer: React.FC = () => {
                                 <Area type="monotone" dataKey="value" stroke="#059669" strokeWidth={2} fill="url(#retentionGradient)" />
                               </AreaChart>
                             </ResponsiveContainer>
+                            ) : null}
                           </div>
                         </div>
                       </div>

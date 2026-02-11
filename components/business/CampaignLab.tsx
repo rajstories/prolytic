@@ -21,7 +21,43 @@ type CampaignResult = {
   posts: CampaignPost[];
   timeline: Array<{ week: number; focus: string; deliverables: string[] }>;
   kpis: Array<{ metric: string; target: string }>;
+  demoMode?: boolean;
 };
+
+const buildFallbackCampaign = (campaignName: string, goal: string): CampaignResult => ({
+  campaignName,
+  strategy: `Demo strategy generated due to temporary API quota limits. Focus on ${goal} with a tight 7-day posting cadence and a clear CTA in each asset.`,
+  contentPillars: ['Hook-first storytelling', 'Social proof clips', 'Offer clarity'],
+  posts: [
+    {
+      platform: 'Instagram',
+      format: 'Reel',
+      hook: 'You are losing viewers in the first 3 seconds.',
+      script: 'Open with outcome, then one proof point, then CTA.',
+      hashtags: ['#creator', '#marketing', '#growth'],
+      bestTimeToPost: 'Tue 6:30 PM',
+      estimatedReach: '8-12K'
+    },
+    {
+      platform: 'YouTube',
+      format: 'Short',
+      hook: 'One edit that doubled retention.',
+      script: 'Before/after cut comparison with timestamp callouts.',
+      hashtags: ['#shorts', '#retention', '#contentstrategy'],
+      bestTimeToPost: 'Thu 5:00 PM',
+      estimatedReach: '12-18K'
+    }
+  ],
+  timeline: [
+    { week: 1, focus: 'Launch', deliverables: ['2 Reels', '1 Short', 'CTA test'] },
+    { week: 2, focus: 'Optimize', deliverables: ['Hook A/B test', 'Caption rewrite'] }
+  ],
+  kpis: [
+    { metric: 'Reach', target: '50K impressions' },
+    { metric: 'Saves', target: '2.5% save rate' }
+  ],
+  demoMode: true
+});
 
 export const CampaignLab: React.FC = () => {
   const [campaignName, setCampaignName] = useState('');
@@ -60,11 +96,15 @@ export const CampaignLab: React.FC = () => {
 
       const data = await response.json();
 
-      if (response.status === 429 || response.status === 403) {
+      if (response.status === 429) {
+        setResult(buildFallbackCampaign(campaignName, goal));
+        setError('Live provider hit rate limits. Showing high-quality demo strategy.');
+        return;
+      }
+
+      if (response.status === 403) {
         triggerKeyModal();
-        setError(response.status === 403 
-          ? 'API key is invalid or suspended. Please enter a new valid key.' 
-          : 'Rate limit exceeded. Please add your own API key.');
+        setError('API key is invalid or suspended. Please enter a new valid key.');
         return;
       }
 
@@ -75,7 +115,8 @@ export const CampaignLab: React.FC = () => {
       setResult(data);
     } catch (err) {
       console.error(err);
-      setError(err instanceof Error ? err.message : 'Campaign generation failed');
+      setResult(buildFallbackCampaign(campaignName, goal));
+      setError('Network/provider issue detected. Showing demo strategy.');
     } finally {
       setLoading(false);
     }
@@ -91,6 +132,12 @@ export const CampaignLab: React.FC = () => {
       {error && (
         <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl">
           <p className="text-[13px] text-red-600 font-medium">{error}</p>
+        </div>
+      )}
+
+      {result?.demoMode && (
+        <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-xl">
+          <p className="text-[13px] text-amber-700 font-medium">Demo Mode enabled for reliability: live quota fallback is active.</p>
         </div>
       )}
 

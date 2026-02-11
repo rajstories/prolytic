@@ -227,8 +227,8 @@ const Dashboard: React.FC = () => {
         )}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 bg-white p-6 rounded-sm border border-slate-200">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 min-w-0">
+        <div className="lg:col-span-2 min-w-0 bg-white p-6 rounded-sm border border-slate-200">
           <div className="flex justify-between items-center mb-6">
             <h3 className="text-base font-semibold text-slate-900">Audience Retention & Views</h3>
             <div className="flex items-center space-x-2 text-sm text-slate-500">
@@ -236,8 +236,9 @@ const Dashboard: React.FC = () => {
               <span className="flex items-center"><div className="w-2 h-2 rounded-full bg-slate-300 mr-2"></div>Retention</span>
             </div>
           </div>
-          <div className="h-[300px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
+          <div className="h-[300px] w-full min-w-0">
+            {chartData.length > 0 ? (
+            <ResponsiveContainer width="100%" height="100%" minWidth={0}>
               <AreaChart data={chartData} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorViews" x1="0" y1="0" x2="0" y2="1">
@@ -267,13 +268,15 @@ const Dashboard: React.FC = () => {
                 <Area type="monotone" dataKey="retention" stroke="#cbd5e1" strokeWidth={2} fill="transparent" strokeDasharray="5 5" />
               </AreaChart>
             </ResponsiveContainer>
+            ) : null}
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-sm border border-slate-200">
+        <div className="min-w-0 bg-white p-6 rounded-sm border border-slate-200">
           <h3 className="text-base font-semibold text-slate-900 mb-6">Demographics</h3>
-          <div className="h-[300px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
+          <div className="h-[300px] w-full min-w-0">
+            {demographicData.length > 0 ? (
+            <ResponsiveContainer width="100%" height="100%" minWidth={0}>
               <BarChart data={demographicData} layout="vertical" margin={{ top: 0, right: 30, left: 0, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#f1f5f9" />
                 <XAxis type="number" hide />
@@ -292,6 +295,7 @@ const Dashboard: React.FC = () => {
                 <Bar dataKey="value" fill="#334155" radius={[0, 4, 4, 0]} barSize={32} />
               </BarChart>
             </ResponsiveContainer>
+            ) : null}
           </div>
         </div>
       </div>

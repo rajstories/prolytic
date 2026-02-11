@@ -11,7 +11,7 @@ const IdeaGenerator: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
-  const { headers, triggerKeyModal, showKeyModal, closeKeyModal, apiKey, setApiKey } = useApiKey();
+  const { headers, showKeyModal, closeKeyModal, apiKey, setApiKey } = useApiKey();
   const { userProfile } = useUserProfile();
 
   const handleGenerate = async () => {
@@ -35,11 +35,13 @@ const IdeaGenerator: React.FC = () => {
 
       const data = await response.json();
 
-      if (response.status === 429 || response.status === 403) {
-        triggerKeyModal();
-        setError(response.status === 403 
-          ? 'API key is invalid or suspended. Please enter a new valid key.' 
-          : 'Rate limit exceeded. Please add your own API key.');
+      if (response.status === 403) {
+        setError('Provider rejected the request. Check server API keys and try again.');
+        return;
+      }
+
+      if (response.status === 429) {
+        setError('Provider is temporarily rate-limited. Please retry in a moment.');
         return;
       }
 

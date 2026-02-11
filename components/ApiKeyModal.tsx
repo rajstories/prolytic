@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface ApiKeyModalProps {
@@ -6,16 +6,22 @@ interface ApiKeyModalProps {
   onClose: () => void;
   onSubmit: (apiKey: string) => void;
   errorMessage?: string;
+  currentKey?: string;
 }
 
 export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({
   isOpen,
   onClose,
   onSubmit,
-  errorMessage
+  errorMessage,
+  currentKey
 }) => {
-  const [apiKey, setApiKey] = useState('');
+  const [apiKey, setApiKey] = useState(currentKey || '');
   const [showKey, setShowKey] = useState(false);
+
+  useEffect(() => {
+    setApiKey(currentKey || '');
+  }, [currentKey, isOpen]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,7 +60,7 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({
                     🔑 Enter Your API Key
                   </h2>
                   <p className="text-gray-400 text-sm">
-                    Enter your own Google Gemini API key to continue
+                    Add your Gemini key for video and multimodal analysis reliability
                   </p>
                 </div>
                 <button
@@ -80,7 +86,7 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-                  How to get your API key:
+                  Gemini key setup:
                 </h3>
                 <ol className="text-gray-300 text-sm space-y-1 ml-7 list-decimal">
                   <li>Visit <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">Google AI Studio</a></li>
@@ -89,7 +95,7 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({
                   <li>Copy the key and paste it below</li>
                 </ol>
                 <p className="text-gray-400 text-xs mt-2">
-                  ✅ Free tier: 15 requests/min, 1,500/day
+                  Text tools can run on server provider fallback. This key is mainly used for video analysis.
                 </p>
               </div>
 
@@ -97,7 +103,7 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({
               <form onSubmit={handleSubmit}>
                 <div className="mb-4">
                   <label className="block text-gray-300 text-sm font-medium mb-2">
-                    Google Gemini API Key
+                    Gemini API Key
                   </label>
                   <div className="relative">
                     <input

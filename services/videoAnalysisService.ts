@@ -22,7 +22,7 @@ export const analyzeVideo = async (file: File, apiKey?: string): Promise<VideoAn
   if (!response.ok) {
     let message = "Video analysis failed.";
     if (response.status === 404) {
-      throw new Error("API route not found. Start the API server on port 3001.");
+      throw new Error("API route not found. Start the backend API server and verify Vite proxy '/api' -> ':8080'.");
     }
     try {
       const contentType = response.headers.get("content-type") || "";
