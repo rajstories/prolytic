@@ -11,7 +11,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
 
-[🎥 Watch Demo](#) • [📖 Read Docs](#features) • [🚀 Try Live](#)
+[🎥 Watch Demo](https://youtu.be/dfAV6JnDUes?si=V3e2SiJQl3oDXKWD)  • [🚀 Try Live](https://prolytic.in/)
 
 ---
 
@@ -518,7 +518,6 @@ This project is licensed under the **MIT License** — see [LICENSE](LICENSE) fo
 
 **Prolytic** — *Stop guessing. Start knowing.*
 
-[⬆ Back to Top](#-prolytic)
 
 </div>
 
