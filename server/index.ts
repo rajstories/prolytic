@@ -1257,12 +1257,13 @@ app.post('/api/analyze/narrative-structure', async (req, res) => {
   }
 });
 
-// Serve static files from the built frontend
-app.use(express.static(path.join(__dirname, '../dist')));
+// Serve static files from the built frontend (cwd is more reliable on managed hosts)
+const distDir = path.resolve(process.cwd(), 'dist');
+app.use(express.static(distDir));
 
 // Serve React app for all other routes (must be last)
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../dist/index.html'));
+  res.sendFile(path.join(distDir, 'index.html'));
 });
 
 const port = Number(process.env.PORT) || 8080;
