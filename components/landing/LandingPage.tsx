@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Navbar } from './Navbar';
-import { Hero } from './Hero';
+import HeroSection from './HeroSection';
 import { Features } from './Features';
 import { Pricing } from './Pricing';
 import { OnboardingModal } from './OnboardingModal';
@@ -18,7 +18,7 @@ export const LandingPage: React.FC = () => {
       <Navbar onOpenModal={openModal} />
       <main>
         <div id="product" className="scroll-mt-28">
-          <Hero onOpenModal={openModal} />
+          <HeroSection onOpenModal={openModal} />
         </div>
 
         <div id="solutions" className="bg-brand-bg border-t border-slate-100 scroll-mt-28">
